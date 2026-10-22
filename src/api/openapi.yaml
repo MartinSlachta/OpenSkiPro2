@@ -1,0 +1,651 @@
+openapi: 3.0.3
+info:
+  title: OpenSkiPro2 API
+  version: "1"
+  description: |
+    Read-only REST + WebSocket API of **OpenSkiPro2**, the alpine ski timing software.
+    Everything OpenSkiPro2 knows about the open event and the running timing: the event,
+    the competitors, the start lists, the results of the runs, the final results and the
+    live timing (who is on the start, on course, who just finished, with intermediate and
+    finish times, ranks and gaps).
+
+    Use it to build any output: scoreboards, live results on the internet, screens,
+    TV graphics, statistics...
+
+    **Conventions**
+
+    * Every time is sent twice: `...Ms` = integer milliseconds already **truncated** to the
+      precision of the event (the official value, used for ranks and ties) and the
+      formatted text in the event precision, e.g. `"1:02.37"`. Missing values are `null`.
+    * Gaps: `gapMs` (0 for the leader) and `gap` (formatted, `null` for the leader).
+    * Times of day (`...DayMs`) are milliseconds since midnight on the clock of the timing
+      device, not truncated. A run going over midnight continues above 24 h.
+    * Status codes: `QLF` classified, `DNS`, `NPS` (not permitted to start), `DNF`, `DSQ`; `null` = no result yet.
+    * Every resource has a revision `rev` that grows with every change of its content;
+      it is also the `ETag` (send `If-None-Match` to get `304 Not Modified`). The
+      WebSocket announces the new revisions (`changed` message).
+    * Clients must ignore unknown fields: new fields may be added in any version.
+
+    **WebSocket** `ws://<host>:<port>/ws` — on connection the server sends `hello`, `status`
+    and `live`, then `competitor`, `live`, `changed`, `status` and `clock` messages as
+    things happen. `competitor` events come for every run at any time (also a DSQ given
+    after the run). A client may `subscribe` to resources to get them pushed in full after
+    every change.
+
+    No authentication: the API is meant for a closed local network.
+  license:
+    name: GPL-3.0
+    url: https://www.gnu.org/licenses/gpl-3.0.html
+servers:
+  - url: /api/v1
+    description: This OpenSkiPro2
+tags:
+  - name: Application
+  - name: Event
+  - name: Results
+  - name: Live
+paths:
+  /status:
+    get:
+      tags: [Application]
+      summary: State of OpenSkiPro2
+      description: |
+        Open event, timing window, timing devices, clock of the timing device and the
+        current revision of every resource. Always available (also without an event).
+      operationId: getStatus
+      responses:
+        "200":
+          description: State
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Status" }
+              example:
+                rev: 2
+                app: OpenSkiPro2
+                version: 0.3.0
+                protocol: 1
+                instance: 629d4ee6-0045-4088-9ed9-b82ddab8bef4
+                event: { open: true, path: "D:/Events/Event005.osp" }
+                timing:
+                  active: true
+                  run: 2
+                  clock: { dayMs: 45185321, synced: true, utcOffsetMin: 60 }
+                  devices:
+                    - { slot: 1, type: CP540, link: tcp, connected: true, text: "TCP 192.168.1.50:13500" }
+                    - { slot: 2, type: none, link: null, connected: false, text: null }
+                revs: { status: 2, event: 1, competitors: 1, runs: 5, live: 12, results: 5,
+                        run/1/startlist: 1, run/1/results: 1, run/2/startlist: 1, run/2/results: 5 }
+  /event:
+    get:
+      tags: [Event]
+      summary: The event
+      description: Titles, type of the event, runs, jury, course data, weather and output groups.
+      operationId: getEvent
+      responses:
+        "200":
+          description: Event
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Event" }
+              example:
+                rev: 1
+                general: { title1: Slovak Cup, title2: Giant Slalom Ladies, date: "2026-12-14", location: Jasná,
+                           nation: SVK, organisation: Ski Club Jasná, timingBy: Timing Service, codex: "5123" }
+                type: { regulation: FIS, fisCategory: FIS, discipline: GS, disciplineName: Giant Slalom, runCount: 2,
+                        interCount: 1, precision: 2, finalRanking: totalOfRuns, runsUsed: [1, 2], courseLength: null }
+                runs: [ { run: 1, name: 1st run, used: true }, { run: 2, name: 2nd run, used: true } ]
+                jury: [ { role: technicalDelegate, code: SVK123, name: HORVÁTH Peter, nation: SVK } ]
+                courses:
+                  - { run: 1, course: Bystrá, homologation: 12345/11/22, startAltitude: "1530", finishAltitude: "1220",
+                      drop: "310", length: "1250", gates: "42", turningGates: "40", startTime: "09:30",
+                      setter: { code: null, name: NAGY Tomáš, nation: SVK }, forerunners: [] }
+                conditions: { weather: sun, snow: hrd, tempStart: "-6", tempFinish: "-3" }
+                groups: [ { index: 0, label: U16, description: Category is equal to U16 } ]
+                forerunners: { from: 901, to: 999 }
+        "503": { $ref: "#/components/responses/NoEvent" }
+  /competitors:
+    get:
+      tags: [Event]
+      summary: All competitors
+      description: Ordered by bib. `groups` are the indices of the output groups the competitor belongs to.
+      operationId: getCompetitors
+      responses:
+        "200":
+          description: Competitors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rev: { type: integer }
+                  competitors: { type: array, items: { $ref: "#/components/schemas/Competitor" } }
+              example:
+                rev: 1
+                competitors:
+                  - { id: 1, bib: 1, lastName: NOVÁKOVÁ, firstName: Jana, name: NOVÁKOVÁ Jana, code: "705001", gender: F,
+                      year: 2000, category: SEN, nation: SVK, region: null, club: SKP Jasná, team: null,
+                      forerunner: false, groups: [1] }
+        "503": { $ref: "#/components/responses/NoEvent" }
+  /runs:
+    get:
+      tags: [Event]
+      summary: Summary of the runs
+      description: State and counters of every run.
+      operationId: getRuns
+      responses:
+        "200":
+          description: Runs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rev: { type: integer }
+                  runs: { type: array, items: { $ref: "#/components/schemas/RunSummary" } }
+              example:
+                rev: 5
+                runs:
+                  - { run: 1, name: 1st run, used: true, state: finished,
+                      counters: { startList: 6, classified: 5, dns: 0, nps: 0, dnf: 1, dsq: 0, notProcessed: 0 } }
+                  - { run: 2, name: 2nd run, used: true, state: inProgress,
+                      counters: { startList: 5, classified: 2, dns: 0, nps: 0, dnf: 0, dsq: 1, notProcessed: 2 } }
+        "503": { $ref: "#/components/responses/NoEvent" }
+  /runs/{run}/startlist:
+    get:
+      tags: [Event]
+      summary: Start list of a run
+      operationId: getStartList
+      parameters:
+        - $ref: "#/components/parameters/Run"
+      responses:
+        "200":
+          description: Start list in start order
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StartList" }
+              example:
+                rev: 1
+                run: 2
+                entries:
+                  - order: 1
+                    bib: 5
+                    plannedStartDayMs: null
+                    competitor: { id: 5, bib: 5, lastName: KRÁLOVÁ, firstName: Petra, name: KRÁLOVÁ Petra, code: "705005",
+                                  gender: F, year: 2011, category: U16, nation: SVK, region: null, club: ŠK Donovaly,
+                                  team: null, forerunner: false, groups: [0] }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "503": { $ref: "#/components/responses/NoEvent" }
+  /runs/{run}/results:
+    get:
+      tags: [Results]
+      summary: Ranking of a run
+      description: |
+        Classified competitors by rank (same truncated time = same rank, the higher bib
+        first) with their intermediate times, then the unclassified in groups (DNS, NPS, DNF,
+        DSQ, not processed). With `group` the ranking inside one output group.
+      operationId: getRunResults
+      parameters:
+        - $ref: "#/components/parameters/Run"
+        - $ref: "#/components/parameters/Group"
+      responses:
+        "200":
+          description: Ranking of the run
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RunResults" }
+              example:
+                rev: 1
+                run: 1
+                group: null
+                counters: { startList: 6, classified: 5, dns: 0, nps: 0, dnf: 1, dsq: 0, notProcessed: 0 }
+                classified:
+                  - rank: 1
+                    bib: 2
+                    competitor: { id: 2, bib: 2, name: MÜLLER Anna, lastName: MÜLLER, firstName: Anna, nation: AUT,
+                                  category: SEN, club: SC Kitzbühel, code: "155002", gender: F, year: 2001,
+                                  region: null, team: null, forerunner: false, groups: [1] }
+                    timeMs: 61740
+                    time: "1:01.74"
+                    gapMs: 0
+                    gap: null
+                    penaltyMs: 0
+                    inter: [ { point: 1, timeMs: 20990, time: "20.99", rank: 1, gapMs: 0, gap: null } ]
+                unclassified:
+                  - kind: DNF
+                    run: 1
+                    entries: [ { bib: 4, competitor: { bib: 4, name: ROSSI Giulia }, reason: null } ]
+        "404": { $ref: "#/components/responses/NotFound" }
+        "503": { $ref: "#/components/responses/NoEvent" }
+  /results:
+    get:
+      tags: [Results]
+      summary: Final ranking
+      description: |
+        Final ranking over the runs taken into consideration (total or best of the runs,
+        as set in the event), with the time and rank of every run. `upto` gives the
+        ranking after an earlier run.
+      operationId: getResults
+      parameters:
+        - name: upto
+          in: query
+          description: Last run taken into account (default all the runs)
+          schema: { type: integer, minimum: 1 }
+        - $ref: "#/components/parameters/Group"
+      responses:
+        "200":
+          description: Final ranking
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FinalResults" }
+              example:
+                rev: 5
+                upto: 2
+                group: null
+                runsUsed: [1, 2]
+                classified:
+                  - rank: 1
+                    bib: 3
+                    competitor: { id: 3, bib: 3, name: SVOBODOVÁ Eva, nation: CZE, category: U16, groups: [0] }
+                    timeMs: 127030
+                    time: "2:07.03"
+                    gapMs: 0
+                    gap: null
+                    runs:
+                      - { run: 1, timeMs: 64010, time: "1:04.01", rank: 4 }
+                      - { run: 2, timeMs: 63020, time: "1:03.02", rank: 1 }
+                unclassified:
+                  - { kind: DNF, run: 1, entries: [ { bib: 4, competitor: { bib: 4, name: ROSSI Giulia }, reason: null } ] }
+                  - { kind: DSQ, run: 2, entries: [ { bib: 6, competitor: { bib: 6, name: LEHMANN Sophie }, reason: Gate 23 } ] }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "503": { $ref: "#/components/responses/NoEvent" }
+  /live:
+    get:
+      tags: [Live]
+      summary: Live state of the run being timed
+      description: |
+        Who is on the start (next first), on course (the first started first, with the
+        intermediate times), the next expected at the finish and the last finishers
+        (newest first). `run` is null while the timing window is closed. The same data
+        comes as the `live` WebSocket message after every change.
+      operationId: getLive
+      responses:
+        "200":
+          description: Live state
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Live" }
+              example:
+                rev: 12
+                run: 2
+                onStart:
+                  - bib: 2
+                    competitor: { bib: 2, name: MÜLLER Anna, nation: AUT }
+                    previous: { timeMs: 61740, time: "1:01.74", rank: 1, gapMs: 0, gap: null }
+                onCourse:
+                  - bib: 1
+                    competitor: { bib: 1, name: NOVÁKOVÁ Jana, nation: SVK }
+                    startDayMs: 45180000
+                    lastPoint: 0
+                    inter: []
+                    previous: { timeMs: 62370, time: "1:02.37", rank: 2, gapMs: 630, gap: "0.63" }
+                nextToFinish: 1
+                finished:
+                  - bib: 3
+                    competitor: { bib: 3, name: SVOBODOVÁ Eva, nation: CZE }
+                    state: finished
+                    status: QLF
+                    startDayMs: 45060000
+                    finishDayMs: 45123020
+                    inter: [ { point: 1, dayMs: 45081950, timeMs: 21950, time: "21.95", rank: 3, gapMs: 650, gap: "0.65" } ]
+                    thisRun: { timeMs: 63020, time: "1:03.02", rank: 1, gapMs: 0, gap: null, penaltyMs: 0 }
+                    total: { timeMs: 127030, time: "2:07.03", rank: 1, gapMs: 0, gap: null }
+                    previous: { timeMs: 64010, time: "1:04.01", rank: 4, gapMs: 2270, gap: "2.27" }
+                    reason: null
+  /openapi.yaml:
+    get:
+      tags: [Application]
+      summary: This description (OpenAPI 3)
+      operationId: getOpenApi
+      responses:
+        "200":
+          description: OpenAPI description
+          content:
+            application/yaml: {}
+components:
+  parameters:
+    Run:
+      name: run
+      in: path
+      required: true
+      description: Run number, 1-based
+      schema: { type: integer, minimum: 1, example: 1 }
+    Group:
+      name: group
+      in: query
+      description: Index of an output group (`groups` of `/event`); the ranking inside that group
+      schema: { type: integer, minimum: 0 }
+  responses:
+    NotFound:
+      description: Unknown run, output group or resource
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+          example: { error: notFound, message: No run 5 }
+    NoEvent:
+      description: No event is open in OpenSkiPro2
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+          example: { error: noEvent, message: No event is open }
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string, enum: [notFound, noEvent, methodNotAllowed] }
+        message: { type: string }
+    Status:
+      type: object
+      properties:
+        rev: { type: integer }
+        app: { type: string, example: OpenSkiPro2 }
+        version: { type: string }
+        protocol: { type: integer, description: Version of the API protocol (incompatible changes only) }
+        instance: { type: string, description: Random per start of OpenSkiPro2 - a new value means that it was restarted }
+        event:
+          type: object
+          properties:
+            open: { type: boolean }
+            path: { type: string, nullable: true }
+        timing:
+          type: object
+          properties:
+            active: { type: boolean, description: The timing window is open }
+            run: { type: integer, nullable: true }
+            clock: { $ref: "#/components/schemas/Clock" }
+            devices: { type: array, items: { $ref: "#/components/schemas/Device" } }
+        revs:
+          type: object
+          description: Current revision of every resource, by resource name
+          additionalProperties: { type: integer }
+    Clock:
+      type: object
+      properties:
+        dayMs: { type: integer, description: Time of day of the timing device (PC time while not synced) }
+        synced: { type: boolean, description: "true: synchronized with the timing device by its impulses" }
+        utcOffsetMin: { type: integer, description: "Offset of the local time to UTC in minutes: UTC = date + dayMs - utcOffsetMin" }
+    Device:
+      type: object
+      properties:
+        slot: { type: integer, enum: [1, 2] }
+        type: { type: string, enum: [none, CP540, simulator] }
+        link: { type: string, enum: [serial, tcp], nullable: true }
+        connected: { type: boolean }
+        text: { type: string, nullable: true }
+    Person:
+      type: object
+      nullable: true
+      properties:
+        code: { type: string, nullable: true }
+        name: { type: string, nullable: true }
+        nation: { type: string, nullable: true }
+    Event:
+      type: object
+      properties:
+        rev: { type: integer }
+        general:
+          type: object
+          properties:
+            title1: { type: string, nullable: true }
+            title2: { type: string, nullable: true }
+            date: { type: string, format: date, nullable: true }
+            location: { type: string, nullable: true }
+            nation: { type: string, nullable: true }
+            organisation: { type: string, nullable: true }
+            timingBy: { type: string, nullable: true }
+            codex: { type: string, nullable: true }
+        type:
+          type: object
+          properties:
+            regulation: { type: string, enum: [FIS, National] }
+            fisCategory: { type: string, nullable: true }
+            discipline: { type: string, enum: [DH, SG, GS, SL, AC] }
+            disciplineName: { type: string }
+            runCount: { type: integer }
+            interCount: { type: integer, description: Number of intermediates (0-3) }
+            precision: { type: integer, description: Decimals of the times (0-3) }
+            finalRanking: { type: string, enum: [totalOfRuns, bestOfRuns] }
+            runsUsed: { type: array, items: { type: integer } }
+            courseLength: { type: number, nullable: true }
+        runs:
+          type: array
+          items:
+            type: object
+            properties:
+              run: { type: integer }
+              name: { type: string }
+              used: { type: boolean, description: Taken into consideration for the final ranking }
+        jury:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Person"
+              - type: object
+                properties:
+                  role:
+                    type: string
+                    enum: [technicalDelegate, referee, assistantReferee, chiefOfRace, chiefOfCourse, startReferee, finishReferee]
+        courses:
+          type: array
+          items:
+            type: object
+            properties:
+              run: { type: integer }
+              course: { type: string, nullable: true }
+              homologation: { type: string, nullable: true }
+              startAltitude: { type: string, nullable: true }
+              finishAltitude: { type: string, nullable: true }
+              drop: { type: string, nullable: true }
+              length: { type: string, nullable: true }
+              gates: { type: string, nullable: true }
+              turningGates: { type: string, nullable: true }
+              startTime: { type: string, nullable: true }
+              setter: { $ref: "#/components/schemas/Person" }
+              forerunners: { type: array, items: { $ref: "#/components/schemas/Person" } }
+        conditions:
+          type: object
+          description: Weather / snow codes of the FIS Live timing (sun, clo, sno... / hrd, pwd, ...)
+          properties:
+            weather: { type: string, nullable: true }
+            snow: { type: string, nullable: true }
+            tempStart: { type: string, nullable: true }
+            tempFinish: { type: string, nullable: true }
+        groups:
+          type: array
+          items:
+            type: object
+            properties:
+              index: { type: integer }
+              label: { type: string }
+              description: { type: string }
+        forerunners:
+          type: object
+          description: Range of the bibs of the forerunners (not ranked)
+          properties:
+            from: { type: integer }
+            to: { type: integer }
+    Competitor:
+      type: object
+      properties:
+        id: { type: integer, nullable: true, description: Database key (stable when the bib changes) }
+        bib: { type: integer }
+        lastName: { type: string }
+        firstName: { type: string }
+        name: { type: string, description: '"LAST First"' }
+        code: { type: string, nullable: true, description: FIS / federation code }
+        gender: { type: string, enum: [M, F], nullable: true }
+        year: { type: integer, nullable: true }
+        category: { type: string, nullable: true }
+        nation: { type: string, nullable: true }
+        region: { type: string, nullable: true }
+        club: { type: string, nullable: true }
+        team: { type: string, nullable: true }
+        forerunner: { type: boolean }
+        groups: { type: array, items: { type: integer }, description: Indices of the output groups }
+    Counters:
+      type: object
+      properties:
+        startList: { type: integer }
+        classified: { type: integer }
+        dns: { type: integer }
+        nps: { type: integer }
+        dnf: { type: integer }
+        dsq: { type: integer }
+        notProcessed: { type: integer }
+    RunSummary:
+      type: object
+      properties:
+        run: { type: integer }
+        name: { type: string }
+        used: { type: boolean }
+        state: { type: string, enum: [notStarted, inProgress, finished] }
+        counters: { $ref: "#/components/schemas/Counters" }
+    StartList:
+      type: object
+      properties:
+        rev: { type: integer }
+        run: { type: integer }
+        entries:
+          type: array
+          items:
+            type: object
+            properties:
+              order: { type: integer }
+              bib: { type: integer }
+              plannedStartDayMs: { type: integer, nullable: true }
+              competitor: { $ref: "#/components/schemas/Competitor" }
+    Intermediate:
+      type: object
+      properties:
+        point: { type: integer, description: Intermediate 1-3 }
+        dayMs: { type: integer, nullable: true, description: "Time of day of the passage (live data and competitor events only)" }
+        timeMs: { type: integer, nullable: true }
+        time: { type: string, nullable: true }
+        rank: { type: integer, nullable: true }
+        gapMs: { type: integer, nullable: true }
+        gap: { type: string, nullable: true }
+    Unclassified:
+      type: object
+      properties:
+        kind: { type: string, enum: [DNS, NPS, DNF, DSQ, DNQ, notProcessed], description: "DNQ: not qualified for the run" }
+        run: { type: integer }
+        entries:
+          type: array
+          items:
+            type: object
+            properties:
+              bib: { type: integer }
+              competitor: { $ref: "#/components/schemas/Competitor" }
+              reason: { type: string, nullable: true }
+    RunResults:
+      type: object
+      properties:
+        rev: { type: integer }
+        run: { type: integer }
+        group: { type: integer, nullable: true }
+        counters: { $ref: "#/components/schemas/Counters" }
+        classified:
+          type: array
+          items:
+            type: object
+            properties:
+              rank: { type: integer }
+              bib: { type: integer }
+              competitor: { $ref: "#/components/schemas/Competitor" }
+              timeMs: { type: integer }
+              time: { type: string }
+              gapMs: { type: integer }
+              gap: { type: string, nullable: true }
+              penaltyMs: { type: integer }
+              inter: { type: array, items: { $ref: "#/components/schemas/Intermediate" } }
+        unclassified: { type: array, items: { $ref: "#/components/schemas/Unclassified" } }
+    FinalResults:
+      type: object
+      properties:
+        rev: { type: integer }
+        upto: { type: integer }
+        group: { type: integer, nullable: true }
+        runsUsed: { type: array, items: { type: integer } }
+        classified:
+          type: array
+          items:
+            type: object
+            properties:
+              rank: { type: integer }
+              bib: { type: integer }
+              competitor: { $ref: "#/components/schemas/Competitor" }
+              timeMs: { type: integer }
+              time: { type: string }
+              gapMs: { type: integer }
+              gap: { type: string, nullable: true }
+              runs:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    run: { type: integer }
+                    timeMs: { type: integer, nullable: true }
+                    time: { type: string, nullable: true }
+                    rank: { type: integer, nullable: true }
+        unclassified: { type: array, items: { $ref: "#/components/schemas/Unclassified" } }
+    RankedTime:
+      type: object
+      nullable: true
+      properties:
+        timeMs: { type: integer }
+        time: { type: string }
+        rank: { type: integer, nullable: true }
+        gapMs: { type: integer, nullable: true }
+        gap: { type: string, nullable: true }
+        penaltyMs: { type: integer, description: Only in thisRun }
+    CompetitorRun:
+      type: object
+      description: Complete state of a competitor in a run (also the data of the `competitor` WebSocket message, sent for every run at any time)
+      properties:
+        bib: { type: integer }
+        competitor: { $ref: "#/components/schemas/Competitor" }
+        state: { type: string, enum: [notStarted, onCourse, finished, dns, nps, dnf, dsq] }
+        status: { type: string, enum: [QLF, DNS, NPS, DNF, DSQ], nullable: true }
+        startDayMs: { type: integer, nullable: true }
+        finishDayMs: { type: integer, nullable: true }
+        lastPoint: { type: integer, description: Last intermediate passed (0 none) }
+        inter: { type: array, items: { $ref: "#/components/schemas/Intermediate" } }
+        thisRun: { $ref: "#/components/schemas/RankedTime" }
+        total: { $ref: "#/components/schemas/RankedTime" }
+        previous: { $ref: "#/components/schemas/RankedTime" }
+        reason: { type: string, nullable: true }
+    Live:
+      type: object
+      properties:
+        rev: { type: integer }
+        run: { type: integer, nullable: true }
+        onStart:
+          type: array
+          items:
+            type: object
+            properties:
+              bib: { type: integer }
+              competitor: { $ref: "#/components/schemas/Competitor" }
+              previous: { $ref: "#/components/schemas/RankedTime" }
+        onCourse:
+          type: array
+          items:
+            type: object
+            properties:
+              bib: { type: integer }
+              competitor: { $ref: "#/components/schemas/Competitor" }
+              startDayMs: { type: integer, nullable: true }
+              lastPoint: { type: integer }
+              inter: { type: array, items: { $ref: "#/components/schemas/Intermediate" } }
+              previous: { $ref: "#/components/schemas/RankedTime" }
+        nextToFinish: { type: integer, nullable: true }
+        finished: { type: array, items: { $ref: "#/components/schemas/CompetitorRun" } }
