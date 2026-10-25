@@ -23,8 +23,17 @@ struct GeneralParams {
     QString nation;
     QString organisation;
     QString timingBy;    // timing service provider
-    QString codex;
+    QString codex;       // FIS codex of the race, 4 digits ("6534", "0123")
+    QString fisNation;   // nation of the codex, empty: the nation above
+    QString publishToken; // token of OpenSkiPro Publish for this race (read by OpenSkiPro Connect through the API)
     bool useFreeHeader = false;
+
+    QString codexNation() const; // fisNation or nation, upper case
+    // "123" -> "0123"; anything else than 1..4 digits stays as it is
+    static QString normalizedCodex(const QString& codex);
+    // The FIS code as written by SkiPro / SkiAlp / older versions: "SVK6534.185", "6534"
+    // -> nation "SVK", codex "6534", TD number "185" (false when it is not such a code).
+    static bool splitCodex(const QString& text, QString* nation, QString* codex, QString* tdNumber);
 };
 
 struct EventTypeParams {
@@ -139,8 +148,14 @@ struct CompetitorFieldConfig {
     QMap<int, QString> labels;   // custom label per field id (empty -> default)
     QSet<int> active;            // fields active in this event
     QList<QPair<int, int>> grid; // (field id, width px) shown in the competitors grid
+    QList<int> shown;            // public fields (shown to the spectators), most important first
+    bool shownSet = false;       // false: never chosen, publicFields() derives them from the grid
     QString label(int fieldId) const;
     bool isActive(int fieldId) const { return active.contains(fieldId); }
+    // Fields the outputs for the spectators show (API event.fields): Name always, then the
+    // active public fields. Name takes the place of the first of Name / Last / First Name.
+    QList<int> publicFields() const;
+    static bool canBePublic(int fieldId);
     static CompetitorFieldConfig defaults();
 };
 
@@ -177,6 +192,9 @@ struct EventParams {
 
     QVariantMap toMap() const;
     void fromMap(const QVariantMap& map);
+    // The FIS code as typed in older versions / SkiPro ("SVK6534.185"): codex, nation and the
+    // TD number of the header (when it has none) set from it.
+    void setFisCode(const QString& text);
     static EventParams defaults();
 };
 

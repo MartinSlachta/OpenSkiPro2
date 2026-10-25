@@ -1,6 +1,7 @@
 #include "ReportRenderer.h"
 #include "RefereeReport.h"
 #include "core/FisPenalty.h"
+#include "core/FisXml.h"
 #include <QRegularExpression>
 #include "core/Event.h"
 
@@ -562,8 +563,9 @@ void ReportRenderer::layoutFooter(Page& page, int pageNo, int pageCount) const
     if (!g.organisation.isEmpty())
         left << g.organisation;
     QStringList right;
-    if (!g.codex.isEmpty())
-        right << g.codex;
+    const QString codex = FisXml::fullCodex(m_ev);
+    if (!codex.isEmpty())
+        right << codex;
     const QDateTime now = QDateTime::currentDateTime();
     right << Tr::tr("%1 at %2")
                  .arg(QLocale::system().toString(now.date(), QLocale::ShortFormat),

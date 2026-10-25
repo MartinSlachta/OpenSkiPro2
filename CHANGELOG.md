@@ -3,6 +3,40 @@
 OpenSkiPro2 uses version numbers 0.x until it has timed its first real FIS race
 (minor version = a batch of features, patch version = fixes).
 
+## 0.7.1 – 2026-10-25
+
+* API: `groupRanks` – rank and gap inside every output group of the competitor in
+  `runs/{r}/results`, `results` (also for every run: `runs[].groupRanks`) and in
+  `thisRun` / `total` / `previous` of the live lists and `competitor` events, so the
+  outputs (Scoreboard, Screen, Publish) show the rank in the category without a
+  request per group.
+
+## 0.7.0 – 2026-10-25
+
+* Competitor Fields: new column **Public** – the competitor fields shown to the
+  spectators (screens and results on the internet), in the order of the rows, with
+  their labels as headers. Name is always public; Bib, transponder, points and the
+  separate last / first name cannot be. Events without the choice show the active
+  fields of the grid.
+* API: `event.fields` (the public fields with their labels), `competitor.custom`.
+
+## 0.6.0 – 2026-10-24
+
+* General Parameters: **Publish token** of the race (results on the internet with
+  OpenSkiPro Publish). It is stored in the event, so two races of one day can have their
+  tokens entered in advance.
+* API: `general.publish.token` (read by the Publish module of OpenSkiPro Connect).
+
+## 0.5.0 – 2026-10-22
+
+* General Parameters: FIS code in three fields – nation (the nation of the event unless
+  typed), codex (4 digits, completed with zeros) and the TD number of the Header;
+  codes of older events and of SkiPro / SkiAlp imports are split automatically.
+* FIS XML, Referee Report and the foot of the reports build the code from the three
+  parts. API: `general.codex` is the codex only, new `general.fis`.
+* Manage Runs: context menu on the ranking (DSQ with the gate, change of the gate,
+  remove the DSQ, Modify Data); a double click opens Modify Data.
+
 ## 0.4.0 – 2026-10-22
 
 * Referee Report (FIS form "Report by the Referee" of a run).

@@ -1097,42 +1097,42 @@ First ball: points rank of the competitor, second ball: its start order in the g
 <context>
     <name>Event</name>
     <message>
-        <location filename="../src/core/EventParams.cpp" line="11"/>
+        <location filename="../src/core/EventParams.cpp" line="12"/>
         <source>Run %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/EventParams.cpp" line="83"/>
+        <location filename="../src/core/EventParams.cpp" line="84"/>
         <source>Downhill</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/EventParams.cpp" line="84"/>
+        <location filename="../src/core/EventParams.cpp" line="85"/>
         <source>Super-G</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/EventParams.cpp" line="85"/>
+        <location filename="../src/core/EventParams.cpp" line="86"/>
         <source>Giant Slalom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/EventParams.cpp" line="86"/>
+        <location filename="../src/core/EventParams.cpp" line="87"/>
         <source>Slalom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/EventParams.cpp" line="87"/>
+        <location filename="../src/core/EventParams.cpp" line="88"/>
         <source>Alpine Combined</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/EventParams.cpp" line="393"/>
+        <location filename="../src/core/EventParams.cpp" line="439"/>
         <source>Event Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/EventParams.cpp" line="394"/>
+        <location filename="../src/core/EventParams.cpp" line="440"/>
         <source>Discipline</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2161,62 +2161,62 @@ Do you want to continue with this list?</source>
 <context>
     <name>FisXml</name>
     <message>
-        <location filename="../src/core/FisXml.cpp" line="97"/>
+        <location filename="../src/core/FisXml.cpp" line="100"/>
         <source>The event is not a FIS race (Event type).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/FisXml.cpp" line="99"/>
-        <source>The codex of the race is missing (General Parameters, e.g. 6534 or SVK6534.185).</source>
+        <location filename="../src/core/FisXml.cpp" line="102"/>
+        <source>The codex of the race is missing (General Parameters, e.g. 6534).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/FisXml.cpp" line="101"/>
+        <location filename="../src/core/FisXml.cpp" line="104"/>
         <source>The nation of the organiser is missing (General Parameters).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/FisXml.cpp" line="103"/>
+        <location filename="../src/core/FisXml.cpp" line="106"/>
         <source>The date of the race is missing (General Parameters).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/FisXml.cpp" line="106"/>
+        <location filename="../src/core/FisXml.cpp" line="109"/>
         <source>A FIS race has competitors of one gender only.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/FisXml.cpp" line="110"/>
+        <location filename="../src/core/FisXml.cpp" line="113"/>
         <source>FIS points / Penalty: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/FisXml.cpp" line="113"/>
+        <location filename="../src/core/FisXml.cpp" line="116"/>
         <source>No competitor classified.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/FisXml.cpp" line="123"/>
+        <location filename="../src/core/FisXml.cpp" line="126"/>
         <source>The FIS number of the Technical Delegate is missing (Header, code of the TD).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/FisXml.cpp" line="125"/>
+        <location filename="../src/core/FisXml.cpp" line="128"/>
         <source>The FIS points list used is not set (FIS points / Penalty).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/FisXml.cpp" line="128"/>
+        <location filename="../src/core/FisXml.cpp" line="131"/>
         <source>%1: some competitors are not processed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/FisXml.cpp" line="130"/>
+        <location filename="../src/core/FisXml.cpp" line="133"/>
         <source>%1: the homologation is missing (Header).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/FisXml.cpp" line="134"/>
+        <location filename="../src/core/FisXml.cpp" line="137"/>
         <source>Some competitors have no FIS code.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2358,68 +2358,108 @@ Do you want to continue with this list?</source>
 <context>
     <name>GeneralParametersDialog</name>
     <message>
-        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="19"/>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="21"/>
         <source>General Parameters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="22"/>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="24"/>
         <source>Titles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="28"/>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="30"/>
         <source>Title :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="29"/>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="31"/>
         <source>Discipline :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="32"/>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="34"/>
         <source>Foot of Page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="45"/>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="47"/>
         <source>Nation :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="49"/>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="51"/>
         <source>Use a free header (no jury / technical data block)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="51"/>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="53"/>
         <source>Date :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="52"/>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="54"/>
         <source>Location :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="53"/>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="55"/>
         <source>Organisation :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="54"/>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="56"/>
         <source>Timing service provider :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="58"/>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="61"/>
         <source>FIS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="61"/>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="67"/>
+        <source>Nation of the codex, empty: the nation of the foot of page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="72"/>
+        <source>Codex of the race (4 digits, completed with zeros on the left)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="76"/>
+        <source>TD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="77"/>
+        <source>FIS number of the Technical Delegate, entered in the Header</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="89"/>
         <source>Codex :</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="93"/>
+        <source>Results on the Internet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="98"/>
+        <source>paste the token of this race</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="99"/>
+        <source>Token from your account on the OpenSkiPro Publish server. OpenSkiPro Connect (module Publish) publishes this race with it; empty: the race is not published.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/GeneralParametersDialog.cpp" line="102"/>
+        <source>Publish token :</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3090,106 +3130,121 @@ Send it to FIS (results@fisski.com) or submit it in the FIS Member Section.</sou
     </message>
     <message>
         <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="41"/>
+        <source>Previous competitor in the start order of the run</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="42"/>
+        <source>Next competitor in the start order of the run</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="43"/>
+        <source>Bib number (the arrows change it by one)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="44"/>
         <source>Bib. :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="51"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="54"/>
         <source>Inquiries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="58"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="61"/>
         <source>Compute the time from a start and a finish hour</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="61"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="64"/>
         <source>Time :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="63"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="66"/>
         <source>Penalty :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="67"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="71"/>
         <source>Status :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="69"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="73"/>
         <source>Gate :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="73"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="77"/>
         <source>Inter %1 :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="81"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="85"/>
         <source>Back to the times records</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="82"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="86"/>
         <source>Forget the manual data and compute the result from the times records again</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="83"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="87"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="84"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="88"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="130"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="142"/>
         <source>&lt;i&gt;Result entered manually.&lt;/i&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="130"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="142"/>
         <source>&lt;i&gt;Result computed from the times records.&lt;/i&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="142"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="154"/>
         <source>Invalid time.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="148"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="160"/>
         <source>Invalid penalty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="182"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="195"/>
         <source>Enter a time or choose another status.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="208"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="221"/>
         <source>Calculator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="218"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="231"/>
         <source>Start hour :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="219"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="232"/>
         <source>Finish hour :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="228"/>
+        <location filename="../src/ui/dialogs/ModifyDataDialog.cpp" line="241"/>
         <source>Invalid hour.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3648,16 +3703,21 @@ Send it to FIS (results@fisski.com) or submit it in the FIS Member Section.</sou
     </message>
     <message>
         <location filename="../src/core/Ranking.cpp" line="16"/>
-        <source>Did Not Finish</source>
+        <source>Not Permitted to Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/core/Ranking.cpp" line="17"/>
-        <source>Disqualified</source>
+        <source>Did Not Finish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/core/Ranking.cpp" line="18"/>
+        <source>Disqualified</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/core/Ranking.cpp" line="19"/>
         <source>Not Processed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3665,88 +3725,93 @@ Send it to FIS (results@fisski.com) or submit it in the FIS Member Section.</sou
 <context>
     <name>RefereeReportDialog</name>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="29"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="30"/>
         <source>Referee Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="39"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="40"/>
         <source>Run :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="43"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="44"/>
         <source>Order</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="46"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="47"/>
         <source>Bib</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="47"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="48"/>
         <source>Start List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="62"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="63"/>
         <source>Protests against a disqualification: 15 minutes after the posting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="63"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="64"/>
         <source>Time published :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="64"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="65"/>
         <source>Deadline :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="73"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="67"/>
+        <source>Do not print the times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="87"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="74"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="88"/>
         <source>Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="75"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="89"/>
         <source>Print</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="76"/>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="147"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="90"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="164"/>
         <source>PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="106"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="120"/>
         <source>Report by the Referee - %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="116"/>
-        <source>DSQ: %1   DNS: %2   DNF: %3</source>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="132"/>
+        <source>DSQ: %1   DNS: %2   NPS: %3   DNF: %4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="139"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="156"/>
         <source>Printing failed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="146"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="163"/>
         <source>Referee report run %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="148"/>
+        <location filename="../src/ui/dialogs/RefereeReportDialog.cpp" line="165"/>
         <source>PDF (*.pdf)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3993,23 +4058,29 @@ Send it to FIS (results@fisski.com) or submit it in the FIS Member Section.</sou
     </message>
     <message>
         <location filename="../src/report/ReportBuilder.cpp" line="21"/>
-        <location filename="../src/report/ReportBuilder.cpp" line="261"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="262"/>
         <source>DNS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/report/ReportBuilder.cpp" line="22"/>
-        <location filename="../src/report/ReportBuilder.cpp" line="262"/>
-        <source>DNF</source>
+        <location filename="../src/report/ReportBuilder.cpp" line="263"/>
+        <source>NPS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/report/ReportBuilder.cpp" line="23"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="264"/>
+        <source>DNF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/report/ReportBuilder.cpp" line="24"/>
         <source>DSQ</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/report/ReportBuilder.cpp" line="133"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="134"/>
         <source>%n competitor(s) classified</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -4017,13 +4088,13 @@ Send it to FIS (results@fisski.com) or submit it in the FIS Member Section.</sou
         </translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="149"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="150"/>
         <source>Gate %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/report/ReportBuilder.cpp" line="183"/>
-        <location filename="../src/report/ReportBuilder.cpp" line="226"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="184"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="227"/>
         <source>%n competitor(s)</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -4031,137 +4102,137 @@ Send it to FIS (results@fisski.com) or submit it in the FIS Member Section.</sou
         </translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="232"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="233"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="234"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="235"/>
         <source>Finish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="235"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="236"/>
         <source>Int. %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="263"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="265"/>
         <source>--</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="264"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="266"/>
         <source>?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="265"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="267"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="305"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="307"/>
         <source>(checksum error)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="327"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="329"/>
         <source>Women</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="327"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="329"/>
         <source>Men</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="363"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="365"/>
         <source>(maximum value)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="374"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="376"/>
         <source>Best 10 at finish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="380"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="382"/>
         <source>Best 5 at start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="409"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="411"/>
         <source>Calculated penalty (A + B - C) = %1 / 10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="401"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="403"/>
         <source>(A) List points of the best 5 to finish in top 10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="400"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="402"/>
         <source>(B) List points of best 5 at start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="395"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="397"/>
         <source>(DNF Did Not Finish, DSQ Disqualified)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="397"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="399"/>
         <source>TOTAL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="402"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="404"/>
         <source>(C) Race points of corresponding competitors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="410"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="412"/>
         <source>Correction value (Z)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="411"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="413"/>
         <source>Category adder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="416"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="418"/>
         <source>Minimum penalty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="416"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="418"/>
         <source>Minimum penalty (2 x maximum value)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="419"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="421"/>
         <source>Maximum penalty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="421"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="423"/>
         <source>Calculated applied penalty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="422"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="424"/>
         <source>Applied penalty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="422"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="424"/>
         <source>Applied penalty (Technical Delegate)</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/report/ReportBuilder.cpp" line="427"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="429"/>
         <source>%n gender(s)</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -4169,306 +4240,306 @@ Send it to FIS (results@fisski.com) or submit it in the FIS Member Section.</sou
         </translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="429"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="431"/>
         <source>No competitor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportBuilder.cpp" line="494"/>
+        <location filename="../src/report/ReportBuilder.cpp" line="496"/>
         <source>%1(Rank)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="180"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="181"/>
         <source>COMPETITION JURY</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="191"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="192"/>
         <source>TECHNICAL DELEGATE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="193"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="194"/>
         <source>REFEREE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="194"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="195"/>
         <source>ASSISTANT REFEREE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="192"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="193"/>
         <source>CHIEF OF RACE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="181"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="182"/>
         <source>WEATHER</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="195"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="196"/>
         <source>COURSE CHIEF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="196"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="197"/>
         <source>START REFEREE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="197"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="198"/>
         <source>FINISH REFEREE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="220"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="221"/>
         <source>CONDITIONS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="221"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="222"/>
         <source>SNOW</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="222"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="223"/>
         <source>TEMPERATURE START</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="223"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="224"/>
         <source>TEMPERATURE FINISH</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="233"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="234"/>
         <source>RUN 1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="235"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="236"/>
         <source>RUN 2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="293"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="294"/>
         <source>COURSE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="294"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="295"/>
         <source>START</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="295"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="296"/>
         <source>FINISH</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="297"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="298"/>
         <source>DROP</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="308"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="309"/>
         <source>LENGTH</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="309"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="310"/>
         <source>HOMOLOGATION</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="370"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="371"/>
         <source>Number of competitors %1, Number of NSA %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="248"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="249"/>
         <source>COURSESETTER</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="258"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="259"/>
         <source>FORERUNNERS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="310"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="311"/>
         <source>GATES</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="311"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="312"/>
         <source>DIRECTIONS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="312"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="313"/>
         <source>STARTING TIME</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="340"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="341"/>
         <source>LIST n°%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="342"/>
-        <location filename="../src/report/ReportRenderer.cpp" line="355"/>
-        <source>APPLIED PENALTY %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/report/ReportRenderer.cpp" line="343"/>
         <location filename="../src/report/ReportRenderer.cpp" line="356"/>
+        <source>APPLIED PENALTY %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/report/ReportRenderer.cpp" line="344"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="357"/>
         <source>CALCULATED PENALTY %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="347"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="348"/>
         <source>F = %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="354"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="355"/>
         <source>WOMEN</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="354"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="355"/>
         <source>MEN</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="412"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="410"/>
         <source>REPORT BY THE REFEREE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="421"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="419"/>
         <source>Place</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="422"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="420"/>
         <source>Country</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="423"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="421"/>
         <source>Codex</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="430"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="428"/>
         <source>Name of the Event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="432"/>
-        <location filename="../src/report/ReportRenderer.cpp" line="519"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="430"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="517"/>
         <source>Date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="438"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="436"/>
         <source>Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="440"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="438"/>
         <source>Gender</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="442"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="440"/>
         <source>Event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="446"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="444"/>
         <source>The following competitors have been disqualified according to ICR:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="451"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="449"/>
         <source>No.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="451"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="449"/>
         <source>Name - Surname</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="451"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="449"/>
         <source>Nat.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="451"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="449"/>
         <source>Gate Number.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="452"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="450"/>
         <source>Gate Judge</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="452"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="450"/>
         <source>Notes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="506"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="504"/>
         <source>Did not start (N°)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="507"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="505"/>
         <source>Not permitted to start (N°)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="508"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="506"/>
         <source>Did not finish (N°)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="515"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="513"/>
         <source>Time published</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="517"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="515"/>
         <source>Deadline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="521"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="519"/>
         <source>The Referee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="575"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="570"/>
         <source>%1 at %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="413"/>
-        <location filename="../src/report/ReportRenderer.cpp" line="578"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="411"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="573"/>
         <source>Page %1/%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/report/ReportRenderer.cpp" line="981"/>
+        <location filename="../src/report/ReportRenderer.cpp" line="976"/>
         <source>Cannot write %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4765,139 +4836,183 @@ Send it to FIS (results@fisski.com) or submit it in the FIS Member Section.</sou
 <context>
     <name>RunsPage</name>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="29"/>
+        <location filename="../src/ui/RunsPage.cpp" line="32"/>
         <source>Manage Runs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="35"/>
+        <location filename="../src/ui/RunsPage.cpp" line="38"/>
         <source>Previous Run (Preceeding Page)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="40"/>
+        <location filename="../src/ui/RunsPage.cpp" line="43"/>
         <source>Next Run (Following Page)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="53"/>
+        <location filename="../src/ui/RunsPage.cpp" line="56"/>
         <source>Inquiries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="55"/>
+        <location filename="../src/ui/RunsPage.cpp" line="58"/>
         <source>List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="55"/>
+        <location filename="../src/ui/RunsPage.cpp" line="58"/>
         <source>Classified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="55"/>
+        <location filename="../src/ui/RunsPage.cpp" line="58"/>
         <source>Did Not Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="55"/>
+        <location filename="../src/ui/RunsPage.cpp" line="58"/>
         <source>Did Not Finish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="55"/>
+        <location filename="../src/ui/RunsPage.cpp" line="58"/>
+        <source>Not Permitted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/RunsPage.cpp" line="59"/>
+        <location filename="../src/ui/RunsPage.cpp" line="240"/>
+        <location filename="../src/ui/RunsPage.cpp" line="247"/>
         <source>Disqualified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="56"/>
+        <location filename="../src/ui/RunsPage.cpp" line="59"/>
         <source>Not Processed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="70"/>
+        <location filename="../src/ui/RunsPage.cpp" line="73"/>
         <source>Start List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="71"/>
+        <location filename="../src/ui/RunsPage.cpp" line="74"/>
         <source>Timing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="73"/>
+        <location filename="../src/ui/RunsPage.cpp" line="76"/>
         <source>Modify Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="74"/>
+        <location filename="../src/ui/RunsPage.cpp" line="77"/>
         <source>Manage un-processed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="75"/>
-        <location filename="../src/ui/RunsPage.cpp" line="199"/>
-        <location filename="../src/ui/RunsPage.cpp" line="210"/>
+        <location filename="../src/ui/RunsPage.cpp" line="78"/>
+        <location filename="../src/ui/RunsPage.cpp" line="267"/>
+        <location filename="../src/ui/RunsPage.cpp" line="278"/>
         <source>Delete Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="85"/>
+        <location filename="../src/ui/RunsPage.cpp" line="88"/>
         <source>Ranking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="87"/>
+        <location filename="../src/ui/RunsPage.cpp" line="90"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="88"/>
+        <location filename="../src/ui/RunsPage.cpp" line="91"/>
         <source>Event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="93"/>
+        <location filename="../src/ui/RunsPage.cpp" line="96"/>
         <source>Rank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="93"/>
+        <location filename="../src/ui/RunsPage.cpp" line="96"/>
         <source>Num</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="93"/>
+        <location filename="../src/ui/RunsPage.cpp" line="96"/>
         <source>Competitor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="93"/>
+        <location filename="../src/ui/RunsPage.cpp" line="96"/>
         <source>Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="122"/>
+        <location filename="../src/ui/RunsPage.cpp" line="104"/>
+        <source>Right click: disqualify the competitor (the gate of the referee&apos;s report), Modify Data.
+Double click: Modify Data.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/RunsPage.cpp" line="133"/>
         <source>%1 / %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="201"/>
+        <location filename="../src/ui/RunsPage.cpp" line="225"/>
+        <source>Gate of the disqualification (%1)...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/RunsPage.cpp" line="225"/>
+        <source>Disqualified (%1)...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/RunsPage.cpp" line="226"/>
+        <source>Remove the disqualification</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/RunsPage.cpp" line="228"/>
+        <source>Modify Data...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/RunsPage.cpp" line="241"/>
+        <source>Disqualification of %1 (%2)
+Gate (or reason) :</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/RunsPage.cpp" line="247"/>
+        <source>Remove the disqualification of %1 (%2)?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/RunsPage.cpp" line="269"/>
         <source>Delete the data of run %1:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="202"/>
+        <location filename="../src/ui/RunsPage.cpp" line="270"/>
         <source>Timing data (times records, results, timing device paper)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="204"/>
+        <location filename="../src/ui/RunsPage.cpp" line="272"/>
         <source>Start list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/RunsPage.cpp" line="210"/>
+        <location filename="../src/ui/RunsPage.cpp" line="278"/>
         <source>The selected data of run %1 will be deleted. Continue?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5449,14 +5564,14 @@ Send it to FIS (results@fisski.com) or submit it in the FIS Member Section.</sou
     </message>
     <message>
         <location filename="../src/ui/TimingWindow.cpp" line="172"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="241"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="499"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="245"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="504"/>
         <source>Start List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/TimingWindow.cpp" line="179"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1948"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1956"/>
         <source>Exit Timing</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5476,35 +5591,35 @@ Send it to FIS (results@fisski.com) or submit it in the FIS Member Section.</sou
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="398"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="408"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="412"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="403"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="413"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="417"/>
         <source>Id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="721"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="726"/>
         <source>Dev.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="721"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="726"/>
         <source>Received</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="721"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="726"/>
         <source>Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="722"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="727"/>
         <source>Lines received from the timing devices, exactly as received.
 They are never modified by the program.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="753"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="758"/>
         <source>Display the timing device paper</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5537,7 +5652,7 @@ DNS / DNF / DSQ, No time and inserted passages use this time.</source>
     </message>
     <message>
         <location filename="../src/ui/TimingWindow.cpp" line="176"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1579"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1585"/>
         <source>Competitor management</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5578,7 +5693,7 @@ DNS / DNF / DSQ, No time and inserted passages use this time.</source>
     </message>
     <message>
         <location filename="../src/ui/TimingWindow.cpp" line="208"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1546"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1552"/>
         <source>Insert a number at the start</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5604,81 +5719,91 @@ DNS / DNF / DSQ, No time and inserted passages use this time.</source>
     </message>
     <message>
         <location filename="../src/ui/TimingWindow.cpp" line="218"/>
-        <source>Status : Did not Finish</source>
+        <source>Status : Not Permitted to Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/TimingWindow.cpp" line="220"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1638"/>
-        <source>Status : Disqualified</source>
+        <source>Status : Did not Finish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/TimingWindow.cpp" line="222"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1109"/>
-        <source>No time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="223"/>
-        <source>Enter a DNS number</source>
+        <location filename="../src/ui/TimingWindow.cpp" line="1644"/>
+        <source>Status : Disqualified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/TimingWindow.cpp" line="224"/>
-        <source>Enter a DNF number</source>
+        <location filename="../src/ui/TimingWindow.cpp" line="1115"/>
+        <source>No time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/TimingWindow.cpp" line="225"/>
-        <source>Enter a DSQ number</source>
+        <source>Enter a DNS number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="227"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1675"/>
-        <source>Search for a Number</source>
+        <location filename="../src/ui/TimingWindow.cpp" line="226"/>
+        <source>Enter a NPS number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/TimingWindow.cpp" line="228"/>
+        <source>Enter a DNF number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/TimingWindow.cpp" line="229"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1709"/>
-        <source>Information / Penalty</source>
+        <source>Enter a DSQ number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/TimingWindow.cpp" line="231"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1681"/>
+        <source>Search for a Number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/TimingWindow.cpp" line="233"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1715"/>
+        <source>Information / Penalty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/TimingWindow.cpp" line="235"/>
         <source>Impulse comment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="236"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="240"/>
         <source>Times records</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="237"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="241"/>
         <source>Time records (by numbers)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="239"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="709"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="243"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="714"/>
         <source>Timing device paper</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="242"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="246"/>
         <source>Run Ranking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="244"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="248"/>
         <source>Event Ranking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="282"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="287"/>
         <source>Double click or type to change the number or the hour.
 Click the status icon to activate / deactivate a passage.
 Double click the Id to comment the impulse.
@@ -5686,324 +5811,329 @@ The line &apos;next&apos; holds the numbers typed for the next impulses.</source
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="333"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="516"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="338"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="521"/>
         <source>%1: the next impulse is given to %2 - %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="354"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="359"/>
         <source>Invalid hour: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="395"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="400"/>
         <source>Start Automatic Lock/Unlock (F2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="398"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="408"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="412"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="721"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="403"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="413"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="417"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="726"/>
         <source>Seq</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="398"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="408"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="412"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="676"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="694"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="403"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="413"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="417"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="681"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="699"/>
         <source>Num</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1034"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="458"/>
+        <source>Numbers to follow at the start (the next one at the bottom).
+F7 / F8 move the selected number, F9 gives DNS, Shift+F9 NPS.
+Type a number on a line to put it there; a number not in the start list is inserted into it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/TimingWindow.cpp" line="649"/>
+        <source>Not Permitted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/TimingWindow.cpp" line="1039"/>
         <source>next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1079"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1084"/>
         <source>Inactive passage (click to activate)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1082"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1087"/>
         <source>Passage without number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1087"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1092"/>
         <source>Another passage of %1 is earlier than this start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1088"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1093"/>
         <source>Earlier than the start of %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1090"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1095"/>
         <source>%1 has another active passage at this point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1122"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1128"/>
         <source>Inserted passage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1124"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1130"/>
         <source>Entered manually</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1134"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1140"/>
         <source>&lt; start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1158"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1164"/>
         <source>Timing device %1, channel %2, sequential number %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1163"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1169"/>
         <source>Comment:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1222"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1228"/>
         <source>No passage for this line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1295"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1301"/>
         <source>Checksum error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1534"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1540"/>
         <source>Passage inserted: type its number, the hour can be changed too</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1547"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1553"/>
         <source>Bib. (inserted into the start list before %1) :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1550"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1556"/>
         <source>the next competitor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1569"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1575"/>
         <source>%1 is not in the competitors list.
 Insert it into the start list anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1583"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1589"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1600"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1612"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1606"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1618"/>
         <source>Select a number in the numbers to follow of a point.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="354"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="398"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="408"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="412"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="359"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="403"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="413"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="417"/>
         <source>Hour Cell.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="405"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="410"/>
         <source>Finish Automatic Lock/Unlock (F3)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="408"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="412"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="694"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="413"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="417"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="699"/>
         <source>Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="453"/>
-        <source>Numbers to follow at the start (the next one at the bottom).
-F7 / F8 move the selected number, F9 gives DNS.
-Type a number on a line to put it there; a number not in the start list is inserted into it.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="456"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="461"/>
         <source>Competitors expected at this point (the next one at the bottom).
 F7 / F8 move the selected number, F10 DNF, F11 DSQ, &apos;No time&apos; if it passed without time.
 Type a number on a line to put it there.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="493"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1555"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1563"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="498"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1561"/>
         <location filename="../src/ui/TimingWindow.cpp" line="1569"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1575"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="493"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1555"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="498"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1561"/>
         <source>%1 - %2 has already started.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="500"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="505"/>
         <source>%1 - %2 is not in the start list.
 Insert this competitor into the start list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="510"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1563"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="515"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1569"/>
         <source>%1 - %2 has a status (%3).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="640"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="645"/>
         <source>Inquiries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="644"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="649"/>
         <source>List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="644"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="649"/>
         <source>Classified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="644"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="649"/>
         <source>Did Not Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="644"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="649"/>
         <source>Did Not Finish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="644"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="650"/>
         <source>Disqualified</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="645"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="650"/>
         <source>Not Processed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="654"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="659"/>
         <source>Timing Device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="673"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="678"/>
         <source>Records</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="676"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="681"/>
         <source>Competitor &amp; Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="690"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1359"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="695"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1365"/>
         <source>Ranking - Event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="694"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="699"/>
         <source>Rank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="694"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="699"/>
         <source>Competitor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="774"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="779"/>
         <source>&lt;b&gt;CP540 simulator:&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="788"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="793"/>
         <source>Start impulse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="793"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="798"/>
         <source>Inter %1 impulse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="797"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="802"/>
         <source>Finish impulse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="801"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="806"/>
         <source>Automatic run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="807"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="812"/>
         <source>Lose next frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="811"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="816"/>
         <source>Replay a log...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="815"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="819"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="820"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="824"/>
         <source>Replay a log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="816"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="821"/>
         <source>Text files (*.txt *.log);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="826"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="831"/>
         <source>Ready</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="886"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="891"/>
         <source>Timing device %1 is not configured (Local configuration &gt; Timing Device %1).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="892"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="897"/>
         <source>Disconnect Timing Device %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="893"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="898"/>
         <source>The timing device %1 is connected.
 While it is disconnected, no impulse is received by the program.
 
@@ -6011,88 +6141,88 @@ Disconnect the timing device %1?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="904"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="909"/>
         <source>Not possible to connect the timing device %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="918"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="923"/>
         <source>Not configured</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1345"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1351"/>
         <source>, Event: [%1] %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1359"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1365"/>
         <source>Ranking - %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1363"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1369"/>
         <source> (by groups)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1431"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1434"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1437"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1440"/>
         <source>Locked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1431"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1434"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1437"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1440"/>
         <source>Automatic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1660"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1675"/>
-        <location filename="../src/ui/TimingWindow.cpp" line="1709"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1666"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1681"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1715"/>
         <source>Bib. :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1639"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1645"/>
         <source>Disqualification of %1 - %2
 Reason (gate...) :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1665"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1671"/>
         <source>Reason (gate...) :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1695"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1701"/>
         <source>%1 - %2 : %3 %4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1721"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1727"/>
         <source>Select an impulse at the start, an intermediate or the finish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1744"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1750"/>
         <source>Penalty %1 added to %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1753"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1759"/>
         <source>Modify the number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1754"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1760"/>
         <source>%1 %2
 Bib. (0 = no number) :</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/TimingWindow.cpp" line="1948"/>
+        <location filename="../src/ui/TimingWindow.cpp" line="1956"/>
         <source>The timing devices will be disconnected. Exit the timing?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6131,31 +6261,36 @@ Bib. (0 = no number) :</source>
     </message>
     <message>
         <location filename="../src/ui/UiHelpers.cpp" line="143"/>
-        <source>Did Not Finish</source>
+        <source>Not Permitted to Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/UiHelpers.cpp" line="144"/>
-        <source>Disqualified</source>
+        <source>Did Not Finish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/UiHelpers.cpp" line="145"/>
+        <source>Disqualified</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/UiHelpers.cpp" line="146"/>
         <source>Not Processed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/UiHelpers.cpp" line="153"/>
+        <location filename="../src/ui/UiHelpers.cpp" line="154"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/UiHelpers.cpp" line="155"/>
+        <location filename="../src/ui/UiHelpers.cpp" line="156"/>
         <source>Finish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/UiHelpers.cpp" line="156"/>
+        <location filename="../src/ui/UiHelpers.cpp" line="157"/>
         <source>Inter %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6163,55 +6298,65 @@ Bib. (0 = no number) :</source>
 <context>
     <name>UnprocessedDialog</name>
     <message>
-        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="42"/>
+        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="49"/>
         <source>Gate %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="52"/>
+        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="59"/>
         <source>Manage un-processed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="56"/>
+        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="63"/>
         <source>Bib.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="56"/>
+        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="63"/>
         <source>Competitor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="56"/>
+        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="63"/>
         <source>Did Not Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="56"/>
+        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="63"/>
         <source>Did Not Finish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="56"/>
-        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="139"/>
-        <source>Disqualified</source>
+        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="63"/>
+        <source>Not Permitted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="64"/>
+        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="147"/>
+        <source>Disqualified</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="72"/>
         <source>Click in a column to give the status, click again to remove it.
 Disqualified: the gate is asked.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="106"/>
+        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="114"/>
         <source>No result yet: proposed status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="140"/>
+        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="148"/>
         <source>Gate of the disqualification of %1 :</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ui/dialogs/UnprocessedDialog.cpp" line="163"/>
+        <source>The statuses were changed. Save the changes?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

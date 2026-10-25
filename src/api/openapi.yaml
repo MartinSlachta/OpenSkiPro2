@@ -90,7 +90,9 @@ paths:
               example:
                 rev: 1
                 general: { title1: Slovak Cup, title2: Giant Slalom Ladies, date: "2026-12-14", location: Jasná,
-                           nation: SVK, organisation: Ski Club Jasná, timingBy: Timing Service, codex: "5123" }
+                           nation: SVK, organisation: Ski Club Jasná, timingBy: Timing Service, codex: "5123",
+                           fis: { nation: SVK, codex: "5123", tdNumber: "185", full: SVK5123.185 },
+                           publish: { token: null } }
                 type: { regulation: FIS, fisCategory: FIS, discipline: GS, disciplineName: Giant Slalom, runCount: 2,
                         interCount: 1, precision: 2, finalRanking: totalOfRuns, runsUsed: [1, 2], courseLength: null }
                 runs: [ { run: 1, name: 1st run, used: true }, { run: 2, name: 2nd run, used: true } ]
@@ -102,6 +104,7 @@ paths:
                 conditions: { weather: sun, snow: hrd, tempStart: "-6", tempFinish: "-3" }
                 groups: [ { index: 0, label: U16, description: Category is equal to U16 } ]
                 forerunners: { from: 901, to: 999 }
+                fields: [ { key: name, label: Name }, { key: nation, label: Nat. }, { key: club, label: Club } ]
         "503": { $ref: "#/components/responses/NoEvent" }
   /competitors:
     get:
@@ -124,7 +127,7 @@ paths:
                 competitors:
                   - { id: 1, bib: 1, lastName: NOVÁKOVÁ, firstName: Jana, name: NOVÁKOVÁ Jana, code: "705001", gender: F,
                       year: 2000, category: SEN, nation: SVK, region: null, club: SKP Jasná, team: null,
-                      forerunner: false, groups: [1] }
+                      custom: null, forerunner: false, groups: [1] }
         "503": { $ref: "#/components/responses/NoEvent" }
   /runs:
     get:
@@ -402,7 +405,20 @@ components:
             nation: { type: string, nullable: true }
             organisation: { type: string, nullable: true }
             timingBy: { type: string, nullable: true }
-            codex: { type: string, nullable: true }
+            codex: { type: string, nullable: true, description: "FIS codex, 4 digits" }
+            fis:
+              type: object
+              description: FIS code of the race, "SVK5123.185" = nation, codex and the FIS number of the TD
+              properties:
+                nation: { type: string, nullable: true }
+                codex: { type: string, nullable: true }
+                tdNumber: { type: string, nullable: true }
+                full: { type: string, nullable: true }
+            publish:
+              type: object
+              description: OpenSkiPro Publish (results on the internet) - used by the Publish module of OpenSkiPro Connect
+              properties:
+                token: { type: string, nullable: true, description: "Token of this race, null when the race is not published" }
         type:
           type: object
           properties:
@@ -473,6 +489,18 @@ components:
           properties:
             from: { type: integer }
             to: { type: integer }
+        fields:
+          type: array
+          description: >-
+            The competitor fields the timekeeper marked as public in OpenSkiPro2 (Competitor Fields,
+            column Public), most important first, with the header to show. Outputs for the spectators
+            (screens, results on the internet) show these and only these. `name` is always there.
+          items:
+            type: object
+            properties:
+              key: { type: string, enum: [name, code, gender, year, category, nation, region, club, team, custom],
+                     description: Key of the field in the competitor object }
+              label: { type: string, description: Header as typed by the timekeeper (or the default name) }
     Competitor:
       type: object
       properties:
@@ -489,6 +517,7 @@ components:
         region: { type: string, nullable: true }
         club: { type: string, nullable: true }
         team: { type: string, nullable: true }
+        custom: { type: string, nullable: true, description: The custom field of the event (its label is in event.fields) }
         forerunner: { type: boolean }
         groups: { type: array, items: { type: integer }, description: Indices of the output groups }
     Counters:
@@ -566,6 +595,7 @@ components:
               gapMs: { type: integer }
               gap: { type: string, nullable: true }
               penaltyMs: { type: integer }
+              groupRanks: { $ref: "#/components/schemas/GroupRanks" }
               inter: { type: array, items: { $ref: "#/components/schemas/Intermediate" } }
         unclassified: { type: array, items: { $ref: "#/components/schemas/Unclassified" } }
     FinalResults:
@@ -587,6 +617,7 @@ components:
               time: { type: string }
               gapMs: { type: integer }
               gap: { type: string, nullable: true }
+              groupRanks: { $ref: "#/components/schemas/GroupRanks" }
               runs:
                 type: array
                 items:
@@ -596,6 +627,14 @@ components:
                     timeMs: { type: integer, nullable: true }
                     time: { type: string, nullable: true }
                     rank: { type: integer, nullable: true }
+                    groupRanks:
+                      type: array
+                      description: Rank inside each output group in this run (as run/{r}/results?group=N)
+                      items:
+                        type: object
+                        properties:
+                          group: { type: integer }
+                          rank: { type: integer }
         unclassified: { type: array, items: { $ref: "#/components/schemas/Unclassified" } }
     RankedTime:
       type: object
@@ -607,6 +646,19 @@ components:
         gapMs: { type: integer, nullable: true }
         gap: { type: string, nullable: true }
         penaltyMs: { type: integer, description: Only in thisRun }
+        groupRanks: { $ref: "#/components/schemas/GroupRanks" }
+    GroupRanks:
+      type: array
+      description: >-
+        Rank and gap inside each output group the competitor belongs to (the same ranking as
+        ?group=N), so a client needs no request per group. Empty without output groups.
+      items:
+        type: object
+        properties:
+          group: { type: integer, description: Index of the output group (event.groups) }
+          rank: { type: integer }
+          gapMs: { type: integer }
+          gap: { type: string, nullable: true }
     CompetitorRun:
       type: object
       description: Complete state of a competitor in a run (also the data of the `competitor` WebSocket message, sent for every run at any time)

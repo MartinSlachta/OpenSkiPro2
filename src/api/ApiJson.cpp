@@ -1,5 +1,6 @@
 #include "ApiJson.h"
 #include "core/Event.h"
+#include "core/FisXml.h"
 #include "core/Ranking.h"
 
 #include <algorithm>
@@ -65,6 +66,23 @@ QJsonArray groupsOf(const Event& ev, const Competitor& c)
     return a;
 }
 
+QString fieldKey(int fieldId)
+{
+    switch (fieldId) {
+    case CompField::Name: return QStringLiteral("name");
+    case CompField::Code: return QStringLiteral("code");
+    case CompField::Gender: return QStringLiteral("gender");
+    case CompField::Year: return QStringLiteral("year");
+    case CompField::Category: return QStringLiteral("category");
+    case CompField::Nation: return QStringLiteral("nation");
+    case CompField::Region: return QStringLiteral("region");
+    case CompField::Club: return QStringLiteral("club");
+    case CompField::Team: return QStringLiteral("team");
+    case CompField::Custom: return QStringLiteral("custom");
+    default: return QString();
+    }
+}
+
 QJsonObject competitor(const Event& ev, const Competitor& c)
 {
     QJsonObject o;
@@ -83,6 +101,7 @@ QJsonObject competitor(const Event& ev, const Competitor& c)
     o.insert(QStringLiteral("region"), text(c.region));
     o.insert(QStringLiteral("club"), text(c.club));
     o.insert(QStringLiteral("team"), text(c.team));
+    o.insert(QStringLiteral("custom"), text(c.custom));
     o.insert(QStringLiteral("forerunner"), ev.isForerunner(c.bib));
     o.insert(QStringLiteral("groups"), groupsOf(ev, c));
     return o;
@@ -183,7 +202,17 @@ QJsonObject event(const Event& ev)
     g.insert(QStringLiteral("nation"), text(p.general.nation));
     g.insert(QStringLiteral("organisation"), text(p.general.organisation));
     g.insert(QStringLiteral("timingBy"), text(p.general.timingBy));
-    g.insert(QStringLiteral("codex"), text(p.general.codex));
+    g.insert(QStringLiteral("codex"), text(GeneralParams::normalizedCodex(p.general.codex)));
+    // FIS code of the race: nation, codex, TD number (Header) and the whole "SVK6534.185"
+    const FisXml::RaceId id = FisXml::raceId(ev);
+    QJsonObject fis;
+    fis.insert(QStringLiteral("nation"), text(id.nation));
+    fis.insert(QStringLiteral("codex"), text(id.codex));
+    fis.insert(QStringLiteral("tdNumber"), text(id.tdNumber));
+    fis.insert(QStringLiteral("full"), text(FisXml::fullCodex(id)));
+    g.insert(QStringLiteral("fis"), fis);
+    // token of OpenSkiPro Publish (results on the internet), visible in the LAN like the rest
+    g.insert(QStringLiteral("publish"), QJsonObject{ { QStringLiteral("token"), text(p.general.publishToken) } });
     o.insert(QStringLiteral("general"), g);
 
     QJsonObject t;
@@ -284,6 +313,19 @@ QJsonObject event(const Event& ev)
     fr.insert(QStringLiteral("from"), p.timing.forerunnerFrom);
     fr.insert(QStringLiteral("to"), p.timing.forerunnerTo);
     o.insert(QStringLiteral("forerunners"), fr);
+
+    // the competitor fields the spectators see, most important first
+    QJsonArray fields;
+    for (int id : p.fields.publicFields()) {
+        const QString key = fieldKey(id);
+        if (key.isEmpty())
+            continue;
+        QJsonObject fo;
+        fo.insert(QStringLiteral("key"), key);
+        fo.insert(QStringLiteral("label"), p.fields.label(id));
+        fields << fo;
+    }
+    o.insert(QStringLiteral("fields"), fields);
     return o;
 }
 
@@ -366,6 +408,21 @@ static RankingResult inGroup(const Event& ev, const RankingResult& all, int grou
         ev.precision());
 }
 
+QHash<int, QJsonArray> groupRanks(const Event& ev, const RankingResult& all)
+{
+    QHash<int, QJsonArray> m;
+    const Precision prec = ev.precision();
+    for (int g = 0; g < ev.params().outputGroups.size(); ++g)
+        for (const auto& e : inGroup(ev, all, g).classified) {
+            QJsonObject o;
+            o.insert(QStringLiteral("group"), g);
+            o.insert(QStringLiteral("rank"), e.rank);
+            putGap(o, e.gapMs, prec);
+            m[e.bib] << o;
+        }
+    return m;
+}
+
 static QString groupKind(const RankingGroup& g)
 {
     if (g.notQualified)
@@ -403,7 +460,9 @@ static QJsonArray unclassifiedJson(const RankingResult& res, CompetitorCache& ca
 QJsonObject runResults(const Event& ev, int runNo, int group)
 {
     const Precision prec = ev.precision();
-    const RankingResult res = inGroup(ev, Ranking::runRanking(ev, runNo), group);
+    const RankingResult all = Ranking::runRanking(ev, runNo);
+    const RankingResult res = inGroup(ev, all, group);
+    const QHash<int, QJsonArray> groups = groupRanks(ev, all);
     CompetitorCache cache(ev);
 
     // best intermediate times of the ranking, for the gaps
@@ -424,6 +483,7 @@ QJsonObject runResults(const Event& ev, int runNo, int group)
         putTime(o, QStringLiteral("time"), e.shownMs, prec);
         putGap(o, e.gapMs, prec);
         o.insert(QStringLiteral("penaltyMs"), e.penaltyMs);
+        o.insert(QStringLiteral("groupRanks"), groups.value(e.bib));
         QJsonArray inter;
         for (int i = 0; i < ev.interCount(); ++i) {
             QJsonObject io;
@@ -451,7 +511,14 @@ QJsonObject runResults(const Event& ev, int runNo, int group)
 QJsonObject finalResults(const Event& ev, int upto, int group)
 {
     const Precision prec = ev.precision();
-    const RankingResult res = inGroup(ev, Ranking::finalRanking(ev, upto), group);
+    const RankingResult all = Ranking::finalRanking(ev, upto);
+    const RankingResult res = inGroup(ev, all, group);
+    const QHash<int, QJsonArray> groups = groupRanks(ev, all);
+    // the rank in a group in a run: among everybody with a time in that run (as run/<r>/results?group=N)
+    QHash<int, QHash<int, QJsonArray>> runGroups;
+    if (!ev.params().outputGroups.isEmpty())
+        for (int r : res.runsUsed)
+            runGroups.insert(r, groupRanks(ev, Ranking::runRanking(ev, r)));
     CompetitorCache cache(ev);
 
     QJsonArray classified;
@@ -462,6 +529,7 @@ QJsonObject finalResults(const Event& ev, int upto, int group)
         o.insert(QStringLiteral("competitor"), cache.get(e.bib));
         putTime(o, QStringLiteral("time"), e.shownMs, prec);
         putGap(o, e.gapMs, prec);
+        o.insert(QStringLiteral("groupRanks"), groups.value(e.bib));
         QJsonArray runs;
         for (int r : res.runsUsed) {
             QJsonObject ro;
@@ -469,6 +537,12 @@ QJsonObject finalResults(const Event& ev, int upto, int group)
             putTime(ro, QStringLiteral("time"), e.runMs[size_t(r - 1)], prec);
             const int rank = e.runRank[size_t(r - 1)];
             ro.insert(QStringLiteral("rank"), rank > 0 ? QJsonValue(rank) : QJsonValue(QJsonValue::Null));
+            QJsonArray rg;
+            for (const auto& v : runGroups.value(r).value(e.bib)) { // rank only, the gap is the one of the run
+                const QJsonObject g = v.toObject();
+                rg << QJsonObject{ { QStringLiteral("group"), g.value(QStringLiteral("group")) }, { QStringLiteral("rank"), g.value(QStringLiteral("rank")) } };
+            }
+            ro.insert(QStringLiteral("groupRanks"), rg);
             runs << ro;
         }
         o.insert(QStringLiteral("runs"), runs);

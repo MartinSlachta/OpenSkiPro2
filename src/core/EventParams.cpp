@@ -2,6 +2,7 @@
 #include "Competitor.h"
 
 #include <QCoreApplication>
+#include <QRegularExpression>
 #include <QStringList>
 
 QString EventTypeParams::runName(int run) const
@@ -42,6 +43,48 @@ QString CompetitorFieldConfig::label(int fieldId) const
     if (const auto* d = competitorFieldDef(fieldId))
         return QCoreApplication::translate("Competitor", d->label);
     return QString();
+}
+
+bool CompetitorFieldConfig::canBePublic(int fieldId)
+{
+    switch (fieldId) {
+    case CompField::Name:
+    case CompField::Code:
+    case CompField::Gender:
+    case CompField::Year:
+    case CompField::Category:
+    case CompField::Nation:
+    case CompField::Region:
+    case CompField::Club:
+    case CompField::Team:
+    case CompField::Custom:
+        return true;
+    default:
+        return false;
+    }
+}
+
+QList<int> CompetitorFieldConfig::publicFields() const
+{
+    QList<int> order;
+    if (shownSet) {
+        order = shown;
+    } else {
+        // not chosen yet: the active public fields of the grid, in grid order
+        for (const auto& g : grid)
+            order << g.first;
+    }
+    QList<int> out;
+    for (int id : order) {
+        if (id == CompField::LastName || id == CompField::FirstName)
+            id = CompField::Name;
+        if (out.contains(id) || !canBePublic(id) || (id != CompField::Name && !isActive(id)))
+            continue;
+        out << id;
+    }
+    if (!out.contains(CompField::Name))
+        out.prepend(CompField::Name);
+    return out;
 }
 
 CompetitorFieldConfig CompetitorFieldConfig::defaults()
@@ -153,6 +196,8 @@ QVariantMap EventParams::toMap() const
     m[QStringLiteral("general.organisation")] = general.organisation;
     m[QStringLiteral("general.timingBy")] = general.timingBy;
     m[QStringLiteral("general.codex")] = general.codex;
+    m[QStringLiteral("general.fisNation")] = general.fisNation;
+    m[QStringLiteral("general.publishToken")] = general.publishToken;
     m[QStringLiteral("general.freeHeader")] = general.useFreeHeader;
     // FIS points / penalty
     m[QStringLiteral("fis.list")] = fisPoints.list;
@@ -248,8 +293,50 @@ QVariantMap EventParams::toMap() const
     for (const auto& g : fields.grid)
         grid << QStringLiteral("%1:%2").arg(g.first).arg(g.second);
     m[QStringLiteral("fields.grid")] = grid.join(QLatin1Char(','));
+    if (fields.shownSet)
+        m[QStringLiteral("fields.public")] = joinInts(fields.shown);
     m[QStringLiteral("output.groups")] = outputGroupsToString(outputGroups);
     return m;
+}
+
+QString GeneralParams::codexNation() const
+{
+    return (fisNation.trimmed().isEmpty() ? nation : fisNation).trimmed().toUpper();
+}
+
+QString GeneralParams::normalizedCodex(const QString& codex)
+{
+    const QString c = codex.trimmed();
+    static const QRegularExpression digits(QStringLiteral("^\\d{1,4}$"));
+    return digits.match(c).hasMatch() ? c.rightJustified(4, QLatin1Char('0')) : c;
+}
+
+bool GeneralParams::splitCodex(const QString& text, QString* nation, QString* codex, QString* tdNumber)
+{
+    static const QRegularExpression re(QStringLiteral("^\\s*([A-Za-z]{3})?\\s*(\\d{1,4})(?:\\.(\\d+))?\\s*$"));
+    const QRegularExpressionMatch m = re.match(text);
+    if (!m.hasMatch())
+        return false;
+    *nation = m.captured(1).toUpper();
+    *codex = normalizedCodex(m.captured(2));
+    *tdNumber = m.captured(3);
+    return true;
+}
+
+void EventParams::setFisCode(const QString& text)
+{
+    // the nation and the TD number of a code "SVK6534.185" go to their own fields
+    QString nat, codex, td;
+    if (!GeneralParams::splitCodex(text, &nat, &codex, &td)) {
+        general.codex = text.trimmed();
+        return;
+    }
+    general.codex = codex;
+    if (!nat.isEmpty() && nat != general.nation.trimmed().toUpper())
+        general.fisNation = nat;
+    const QString tdKey = QLatin1String(HeaderKeys::TechnicalDelegate) + QStringLiteral(".code");
+    if (!td.isEmpty() && header.value(tdKey).trimmed().isEmpty())
+        header.setValue(tdKey, td);
 }
 
 void EventParams::fromMap(const QVariantMap& m)
@@ -279,6 +366,8 @@ void EventParams::fromMap(const QVariantMap& m)
     general.organisation = str("general.organisation");
     general.timingBy = str("general.timingBy");
     general.codex = str("general.codex");
+    general.fisNation = str("general.fisNation");
+    general.publishToken = str("general.publishToken");
     general.useFreeHeader = flag(QStringLiteral("general.freeHeader"), false);
     fisPoints.list = str("fis.list");
     for (int g = 0; g < 2; ++g) {
@@ -314,6 +403,7 @@ void EventParams::fromMap(const QVariantMap& m)
     for (auto it = m.cbegin(); it != m.cend(); ++it)
         if (it.key().startsWith(QLatin1String("header.")))
             header.values.insert(it.key().mid(7), it.value().toString());
+    setFisCode(general.codex);
 
     printing.fontTitle1 = fontFromString(str("print.fontTitle1"), printing.fontTitle1);
     printing.fontTitle2 = fontFromString(str("print.fontTitle2"), printing.fontTitle2);
@@ -384,6 +474,8 @@ void EventParams::fromMap(const QVariantMap& m)
                 fields.grid << qMakePair(p[0].toInt(), p[1].toInt());
         }
     }
+    fields.shownSet = m.contains(QStringLiteral("fields.public"));
+    fields.shown = fields.shownSet ? splitInts(str("fields.public")) : QList<int>();
     outputGroups = outputGroupsFromString(str("output.groups"));
 }
 

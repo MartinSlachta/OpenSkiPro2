@@ -5,6 +5,7 @@
 #include "dialogs/ModifyDataDialog.h"
 #include "dialogs/StartListDialog.h"
 #include "dialogs/UnprocessedDialog.h"
+#include "timing/TimingEngine.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -12,7 +13,9 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHeaderView>
+#include <QInputDialog>
 #include <QLabel>
+#include <QMenu>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRadioButton>
@@ -97,6 +100,9 @@ RunsPage::RunsPage(Event* ev, QWidget* parent)
     m_ranking->setColumnWidth(0, 80);
     m_ranking->setColumnWidth(1, 80);
     m_ranking->setColumnWidth(3, 140);
+    m_ranking->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_ranking->setToolTip(tr("Right click: disqualify the competitor (the gate of the referee's report), Modify Data.\n"
+                             "Double click: Modify Data."));
     right->addWidget(m_ranking, 1);
     body->addLayout(right, 1);
     lay->addLayout(body, 1);
@@ -106,6 +112,11 @@ RunsPage::RunsPage(Event* ev, QWidget* parent)
     connect(bStart, &QPushButton::clicked, this, &RunsPage::editStartList);
     connect(bTiming, &QPushButton::clicked, this, [this] { Q_EMIT timingRequested(m_run); });
     connect(bModify, &QPushButton::clicked, this, &RunsPage::modifyData);
+    connect(m_ranking, &QTableWidget::customContextMenuRequested, this, &RunsPage::rankingMenu);
+    connect(m_ranking, &QTableWidget::cellDoubleClicked, this, [this](int row) {
+        if (const int bib = bibAt(row); bib > 0)
+            modifyBib(bib);
+    });
     connect(bUnproc, &QPushButton::clicked, this, &RunsPage::manageUnprocessed);
     connect(bDelete, &QPushButton::clicked, this, &RunsPage::deleteData);
     connect(m_rankingMode, &QComboBox::currentIndexChanged, this, &RunsPage::refresh);
@@ -178,10 +189,66 @@ void RunsPage::editStartList()
 
 void RunsPage::modifyData()
 {
+    modifyBib(0);
+}
+
+void RunsPage::modifyBib(int bib)
+{
     if (!m_ev->isOpen())
         return;
-    ModifyDataDialog dlg(m_ev, m_run, 0, this);
+    ModifyDataDialog dlg(m_ev, m_run, bib, this);
     dlg.exec();
+}
+
+int RunsPage::bibAt(int row) const
+{
+    const QTableWidgetItem* it = m_ranking->item(row, 1);
+    return it ? it->text().toInt() : 0;
+}
+
+// After the run the referee goes through the reports of the gate judges: a DSQ given
+// directly in the ranking, also to a competitor with a time (status of the current run).
+void RunsPage::rankingMenu(const QPoint& pos)
+{
+    const int bib = bibAt(m_ranking->rowAt(pos.y()));
+    if (bib <= 0 || !m_ev->isOpen())
+        return;
+    const TimeInfo info = m_ev->run(m_run).info(bib);
+    const bool dsq = info.status == ResultStatus::DSQ;
+    const QString who = QStringLiteral("%1 - %2").arg(bib).arg(m_ev->competitorName(bib));
+    const QString run = m_ev->params().type.runName(m_run);
+    QMenu menu(this);
+    QAction* title = menu.addAction(who);
+    title->setEnabled(false);
+    menu.addSeparator();
+    QAction* aDsq = menu.addAction(UiHelpers::icon(QStringLiteral("dsq")),
+                                   dsq ? tr("Gate of the disqualification (%1)...").arg(run) : tr("Disqualified (%1)...").arg(run));
+    QAction* aUndo = dsq ? menu.addAction(tr("Remove the disqualification")) : nullptr;
+    menu.addSeparator();
+    QAction* aModify = menu.addAction(UiHelpers::icon(QStringLiteral("modify")), tr("Modify Data..."));
+    QAction* chosen = menu.exec(m_ranking->viewport()->mapToGlobal(pos));
+    if (!chosen)
+        return;
+    if (chosen == aModify) {
+        modifyBib(bib);
+        return;
+    }
+    TimingEngine engine(m_ev);
+    engine.setRun(m_run);
+    if (chosen == aDsq) {
+        bool ok = false;
+        const QString gate = QInputDialog::getText(this, tr("Disqualified"),
+                                                   tr("Disqualification of %1 (%2)\nGate (or reason) :").arg(who, run),
+                                                   QLineEdit::Normal, info.reason, &ok);
+        if (!ok)
+            return;
+        engine.setStatus(bib, ResultStatus::DSQ, gate.trimmed());
+    } else if (chosen == aUndo) {
+        if (QMessageBox::question(this, tr("Disqualified"), tr("Remove the disqualification of %1 (%2)?").arg(who, run))
+            != QMessageBox::Yes)
+            return;
+        engine.setStatus(bib, ResultStatus::Classified); // the result of the times records again
+    }
 }
 
 void RunsPage::manageUnprocessed()

@@ -68,6 +68,7 @@ private:
         qint64 shownMs = TimeUtil::kNoTime;
         int rank = 0;
         qint64 gapMs = TimeUtil::kNoTime;
+        QJsonArray groups; // rank and gap in each output group (ApiJson::groupRanks)
     };
     void computeRanks(const Event& ev);
     QJsonObject rankJson(const QHash<int, Rank>& ranks, int bib, qint64 penaltyMs, bool withPenalty, Precision p) const;

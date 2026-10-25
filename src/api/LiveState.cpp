@@ -150,13 +150,15 @@ QVector<LiveState::Change> LiveState::update(const Event& ev, int runNo, bool ba
 
 void LiveState::computeRanks(const Event& ev)
 {
-    auto toMap = [](const RankingResult& r) {
+    auto toMap = [&ev](const RankingResult& r) {
         QHash<int, Rank> m;
+        const QHash<int, QJsonArray> groups = ApiJson::groupRanks(ev, r);
         for (const auto& e : r.classified) {
             Rank k;
             k.shownMs = e.shownMs;
             k.rank = e.rank;
             k.gapMs = e.gapMs;
+            k.groups = groups.value(e.bib);
             m.insert(e.bib, k);
         }
         return m;
@@ -185,6 +187,7 @@ QJsonObject LiveState::rankJson(const QHash<int, Rank>& ranks, int bib, qint64 p
     ApiJson::putTime(o, QStringLiteral("time"), it->shownMs, p);
     o.insert(QStringLiteral("rank"), it->rank);
     ApiJson::putGap(o, it->gapMs, p);
+    o.insert(QStringLiteral("groupRanks"), it->groups);
     if (withPenalty)
         o.insert(QStringLiteral("penaltyMs"), penaltyMs);
     return o;

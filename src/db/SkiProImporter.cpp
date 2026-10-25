@@ -420,6 +420,8 @@ bool SkiProImporter::readDatabases(const QString& mainFile, const QString& runsF
     const QString list = p.value(QStringLiteral("IMPORT_LIST_NUMBER"));
     if (!list.isEmpty() && list != QLatin1String("0"))
         ep.header.setValue(QLatin1String(HeaderKeys::ListNumber), list);
+    // "SVK6534.185": nation, codex and TD number in their own fields
+    ep.setFisCode(ep.general.codex);
 
     // ---- printing
     auto& pr = ep.printing;

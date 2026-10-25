@@ -36,7 +36,7 @@ RefereeReportData build(const Event& ev, int run, Order order, const QTime& publ
     const auto& p = ev.params();
     d.place = p.general.location;
     d.country = FisXml::raceId(ev).nation;
-    d.codex = p.general.codex.trimmed();
+    d.codex = FisXml::fullCodex(ev);
     const QString title = p.general.title1.section(QLatin1Char('\n'), 0, 0).trimmed();
     d.eventName = ev.runCount() > 1 ? QStringLiteral("%1 - %2").arg(p.type.runName(run), title) : title;
     d.date = p.general.date.isValid() ? p.general.date.toString(QStringLiteral("dd.MM.yyyy")) : QString();

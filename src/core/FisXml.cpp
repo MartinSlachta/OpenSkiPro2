@@ -59,19 +59,22 @@ RaceId raceId(const Event& ev)
 {
     RaceId id;
     const auto& g = ev.params().general;
-    static const QRegularExpression re(QStringLiteral("^\\s*([A-Za-z]{3})?\\s*(\\d+)(?:\\.(\\d+))?\\s*$"));
-    const auto m = re.match(g.codex);
-    if (m.hasMatch()) {
-        id.nation = m.captured(1).toUpper();
-        id.codex = m.captured(2);
-        id.tdNumber = m.captured(3);
-    }
-    if (id.nation.isEmpty())
-        id.nation = g.nation.trimmed().toUpper();
-    const QString td = ev.params().header.value(QLatin1String(HeaderKeys::TechnicalDelegate) + QStringLiteral(".code")).trimmed();
-    if (!td.isEmpty())
-        id.tdNumber = td;
+    id.nation = g.codexNation();
+    id.codex = GeneralParams::normalizedCodex(g.codex);
+    id.tdNumber = ev.params().header.value(QLatin1String(HeaderKeys::TechnicalDelegate) + QStringLiteral(".code")).trimmed();
     return id;
+}
+
+QString fullCodex(const RaceId& id)
+{
+    if (id.codex.isEmpty())
+        return QString();
+    return id.nation + id.codex + (id.tdNumber.isEmpty() ? QString() : QStringLiteral(".") + id.tdNumber);
+}
+
+QString fullCodex(const Event& ev)
+{
+    return fullCodex(raceId(ev));
 }
 
 QString fileName(const Event& ev)
@@ -96,7 +99,7 @@ QStringList check(const Event& ev)
     if (p.type.regulation != Regulation::FIS)
         out << QCoreApplication::translate("FisXml", "The event is not a FIS race (Event type).");
     if (id.codex.isEmpty())
-        out << QCoreApplication::translate("FisXml", "The codex of the race is missing (General Parameters, e.g. 6534 or SVK6534.185).");
+        out << QCoreApplication::translate("FisXml", "The codex of the race is missing (General Parameters, e.g. 6534).");
     if (id.nation.size() != 3)
         out << QCoreApplication::translate("FisXml", "The nation of the organiser is missing (General Parameters).");
     if (!p.general.date.isValid())

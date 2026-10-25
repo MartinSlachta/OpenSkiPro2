@@ -9,6 +9,7 @@
 
 class Event;
 struct Competitor;
+struct RankingResult;
 
 // JSON of the REST resources of the API (docs/api.md). Pure functions of the event,
 // shared by the HTTP server, the WebSocket pushes and the tests.
@@ -31,9 +32,14 @@ private:
     const Event& m_ev;
     QHash<int, QJsonObject> m_cache;
 };
+// key of a competitor field in the competitor object (empty for fields not in the API)
+QString fieldKey(int fieldId);
 QJsonObject competitor(const Event& ev, const Competitor& c);
 // Indices of the output groups the competitor belongs to.
 QJsonArray groupsOf(const Event& ev, const Competitor& c);
+// Rank and gap of every classified bib of a ranking inside each output group it belongs
+// to (the same ranking as ?group=N): bib -> [{group, rank, gapMs, gap}].
+QHash<int, QJsonArray> groupRanks(const Event& ev, const RankingResult& all);
 
 QJsonObject event(const Event& ev);
 QJsonObject competitors(const Event& ev);

@@ -6,7 +6,7 @@
 
 class QTableWidget;
 
-// Competitor fields: active fields, labels and the columns of the grid.
+// Competitor fields: active fields, labels, the columns of the grid and the public fields.
 class CompetitorFieldsDialog : public QDialog {
     Q_OBJECT
 public:
@@ -15,5 +15,6 @@ public:
 
 private:
     void move(int delta);
+    void updatePublic(int row);
     QTableWidget* m_table;
 };

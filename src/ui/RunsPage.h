@@ -4,6 +4,7 @@
 
 class Event;
 class QComboBox;
+class QPoint;
 class QLabel;
 class QTableWidget;
 
@@ -23,6 +24,9 @@ private:
     void refresh();
     void editStartList();
     void modifyData();
+    void modifyBib(int bib); // 0: the first of the start list
+    int bibAt(int row) const;
+    void rankingMenu(const QPoint& pos);
     void deleteData();
     void manageUnprocessed();
 

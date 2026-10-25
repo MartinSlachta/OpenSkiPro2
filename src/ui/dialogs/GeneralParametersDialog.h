@@ -7,6 +7,7 @@
 class QCheckBox;
 class QComboBox;
 class QDateEdit;
+class QLabel;
 class QLineEdit;
 class QPlainTextEdit;
 
@@ -17,6 +18,8 @@ public:
     void apply(EventParams& p) const;
 
 private:
+    void updateCodex(); // "SVK6534.185" shown beside the fields
+
     QPlainTextEdit* m_title;
     QPlainTextEdit* m_discipline;
     QDateEdit* m_date;
@@ -25,5 +28,9 @@ private:
     QLineEdit* m_organisation;
     QLineEdit* m_timingBy;
     QCheckBox* m_freeHeader;
+    QLineEdit* m_fisNation;
     QLineEdit* m_codex;
+    QLineEdit* m_td;
+    QLabel* m_fullCodex;
+    QLineEdit* m_publishToken;
 };

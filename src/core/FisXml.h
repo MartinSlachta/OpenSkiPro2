@@ -13,11 +13,14 @@ namespace FisXml {
 
 struct RaceId {
     QString nation;   // "SVK"
-    QString codex;    // "6534"
+    QString codex;    // "6534" (4 digits)
     QString tdNumber; // "185"
 };
-// From the codex of the event ("SVK6534.185", "6534") and the nation / TD of the event.
+// From the codex and its nation (General Parameters) and the code of the TD (Header).
 RaceId raceId(const Event& ev);
+// "SVK6534.185" as written on the papers (without ".185" when the TD has no code).
+QString fullCodex(const RaceId& id);
+QString fullCodex(const Event& ev);
 
 QString fileName(const Event& ev); // "SVK6534.xml"
 int season(const Event& ev);       // FIS season of the race date (from 1st July: next year)
