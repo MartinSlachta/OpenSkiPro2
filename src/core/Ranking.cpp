@@ -220,8 +220,8 @@ RankingResult finalRanking(const Event& ev, int uptoRun)
                     key.kind = 2;
                 else if (info.status == ResultStatus::DSQ)
                     key.kind = 3;
-                else if (r > res.runsUsed.first() && run.startPosition(bib) < 0)
-                    key.kind = 4; // classified before, not in the start list of this run
+                else if (r > res.runsUsed.first() && !run.startList.isEmpty() && run.startPosition(bib) < 0)
+                    key.kind = 4; // classified before, not in the start list of this run (a run without one: not processed)
                 else
                     key.kind = 5;
                 e.reason = info.reason;

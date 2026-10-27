@@ -3,6 +3,36 @@
 OpenSkiPro2 uses version numbers 0.x until it has timed its first real FIS race
 (minor version = a batch of features, patch version = fixes).
 
+## 0.7.5 – 2026-10-27
+
+* Timing: a competitor who started is put into the start list (by the start time),
+  also when the number came from the CP540 with the impulse or was given to the start
+  impulse later. Before, such a run had results but an empty start list (printed with
+  0 competitors, while *Manage Runs* counted them). Opening the Timing of a run puts in
+  the competitors timed before.
+
+## 0.7.4 – 2026-10-27
+
+* Print layouts: a run without its own layout (start list, run ranking, ranking after
+  run) takes the layout of the nearest run that has one instead of the default, so the
+  columns set for run 1 are there in run 2 too. The columns of the run follow it: list
+  points / time of the previous run in the start list, one "time (rank)" per run in the
+  ranking after run.
+
+## 0.7.3 – 2026-10-27
+
+* Leaving the Timing warns about bibs of the runs that no competitor has (e.g. a bib
+  sent by the CP540 that was never given out): they have no name in the results and the
+  outputs. *Competitors...* keeps the Timing open and opens the competitor management.
+* FIS XML export: the same bibs are in the list of things to check.
+
+## 0.7.2 – 2026-10-27
+
+* Ranking: a competitor is "Did Not Qualify" for a run only when that run has a start
+  list. A later run without one (not made yet, or cleared) leaves them not processed,
+  so the total after that run no longer lists the whole field as DNQ (Publish showed
+  it, the outputs got no classified rows).
+
 ## 0.7.1 – 2026-10-25
 
 * API: `groupRanks` – rank and gap inside every output group of the competitor in

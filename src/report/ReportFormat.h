@@ -90,6 +90,10 @@ struct ReportFormat {
     static QString storageId(ReportType type);            // document type
     static QString storageId(ReportType type, int run);   // layout of a run ("start_list_run2")
     static bool layoutPerRun(ReportType type);
+    // The layout of run `from` used for run `to` that has none of its own: the columns that
+    // depend on the run follow it (start list: list points / time of the previous run;
+    // ranking after run: one "time (rank)" column per run up to `to`).
+    static ReportFormat forRun(const ReportFormat& f, ReportType type, int from, int to);
     static QString typeName(ReportType type);
 };
 

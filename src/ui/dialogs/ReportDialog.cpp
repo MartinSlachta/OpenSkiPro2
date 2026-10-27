@@ -238,10 +238,27 @@ void ReportDialog::loadStored()
 {
     m_formatRun = run();
     QString stored = m_ev->reportFormatData(ReportFormat::storageId(m_type, m_formatRun));
-    // layout of an older version (one for all the runs): kept for run 1
-    if (stored.isEmpty() && ReportFormat::layoutPerRun(m_type) && m_formatRun == 1)
-        stored = m_ev->reportFormatData(ReportFormat::storageId(m_type));
-    ReportFormat f = stored.isEmpty() ? ReportFormat::defaults(m_type, m_formatRun) : ReportFormat::fromString(stored, m_type);
+    // a run without its own layout takes the one of the nearest run that has one: the
+    // runs before, the layout of an older version (one for all the runs, as run 1), the
+    // runs after - not the defaults, the timekeeper's columns are not lost
+    int from = m_formatRun;
+    if (stored.isEmpty() && ReportFormat::layoutPerRun(m_type)) {
+        QList<QPair<int, QString>> candidates;
+        for (int r = m_formatRun - 1; r >= 1; --r)
+            candidates << qMakePair(r, ReportFormat::storageId(m_type, r));
+        candidates << qMakePair(1, ReportFormat::storageId(m_type));
+        for (int r = m_formatRun + 1; r <= m_ev->runCount(); ++r)
+            candidates << qMakePair(r, ReportFormat::storageId(m_type, r));
+        for (const auto& c : candidates) {
+            stored = m_ev->reportFormatData(c.second);
+            if (!stored.isEmpty()) {
+                from = c.first;
+                break;
+            }
+        }
+    }
+    ReportFormat f = stored.isEmpty() ? ReportFormat::defaults(m_type, m_formatRun)
+                                      : ReportFormat::forRun(ReportFormat::fromString(stored, m_type), m_type, from, m_formatRun);
     // final ranking: one column per run of the event by default
     if (stored.isEmpty() && (m_type == ReportType::FinalRanking || m_type == ReportType::FinalRankingPoints)
         && m_ev->runCount() != 2) {

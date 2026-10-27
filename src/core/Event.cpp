@@ -2,6 +2,8 @@
 #include "db/EventDb.h"
 
 #include <QCoreApplication>
+#include <QSet>
+#include <algorithm>
 
 Event::Event(QObject* parent)
     : QObject(parent)
@@ -104,6 +106,25 @@ void Event::setCategories(const CategoryGrid& g)
 }
 
 // ---- competitors --------------------------------------------------------------
+
+QVector<int> Event::bibsWithoutCompetitor(int r) const
+{
+    const RunData& d = run(r);
+    QSet<int> bibs;
+    for (const auto& e : d.startList)
+        bibs.insert(e.bib);
+    for (auto it = d.infos.cbegin(); it != d.infos.cend(); ++it)
+        bibs.insert(it.key());
+    for (const auto& rec : d.records)
+        if (rec.isActive())
+            bibs.insert(rec.bib);
+    QVector<int> out;
+    for (int bib : bibs)
+        if (bib > 0 && !competitorByBib(bib))
+            out << bib;
+    std::sort(out.begin(), out.end());
+    return out;
+}
 
 const Competitor* Event::competitorByBib(int bib) const
 {

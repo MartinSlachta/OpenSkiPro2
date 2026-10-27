@@ -128,6 +128,7 @@ Q_SIGNALS:
 private:
     int addRecord(TimeRecord rec);
     void afterRecordChange(int bib);
+    void startedIntoStartList();              // started bibs missing in the start list (CP540 number)
     bool isOut(int bib) const;                 // DNS / NPS / DNF / DSQ
     qint64 minTimeMs(int point) const;
 

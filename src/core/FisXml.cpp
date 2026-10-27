@@ -131,6 +131,14 @@ QStringList warnings(const Event& ev)
             out << QCoreApplication::translate("FisXml", "%1: some competitors are not processed.").arg(p.type.runName(r));
         if (p.header.runValue(r, QLatin1String(HeaderKeys::Homologation)).trimmed().isEmpty())
             out << QCoreApplication::translate("FisXml", "%1: the homologation is missing (Header).").arg(p.type.runName(r));
+        const QVector<int> unknown = ev.bibsWithoutCompetitor(r);
+        if (!unknown.isEmpty()) {
+            QStringList bibs;
+            for (int bib : unknown)
+                bibs << QString::number(bib);
+            out << QCoreApplication::translate("FisXml", "%1: bibs that are not in the competitors list: %2.")
+                       .arg(p.type.runName(r), bibs.join(QStringLiteral(", ")));
+        }
     }
     for (const auto& c : ev.competitors())
         if (!ev.isForerunner(c.bib) && c.code.trimmed().isEmpty()) {

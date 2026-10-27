@@ -49,6 +49,9 @@ public:
     bool addCompetitors(QVector<Competitor>& list); // bulk insert in one transaction
     bool replaceCompetitors(const QVector<Competitor>& list);
     bool isForerunner(int bib) const;
+    // Bibs of run r (start list, results, time records) that no competitor has: they have
+    // no name in the results and the outputs (warned on leaving the Timing, FIS XML).
+    QVector<int> bibsWithoutCompetitor(int r) const;
 
     // -- runs (1-based)
     const RunData& run(int r) const;

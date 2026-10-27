@@ -1948,6 +1948,30 @@ bool TimingWindow::eventFilter(QObject* obj, QEvent* e)
 
 void TimingWindow::closeEvent(QCloseEvent* e)
 {
+    // bibs from the timing device (or typed) that no competitor has: only a warning,
+    // "Competitors..." keeps the Timing open to add them
+    QStringList unknown;
+    for (int r = 1; r <= m_ev->runCount(); ++r) {
+        QStringList bibs;
+        for (int bib : m_ev->bibsWithoutCompetitor(r))
+            bibs << QString::number(bib);
+        if (!bibs.isEmpty())
+            unknown << m_ev->params().type.runName(r) + QStringLiteral(": ") + bibs.join(QStringLiteral(", "));
+    }
+    if (!unknown.isEmpty()) {
+        QMessageBox box(QMessageBox::Warning, tr("Exit Timing"),
+                        tr("These bibs are not in the competitors list:") + QStringLiteral("\n\n") + unknown.join(QLatin1Char('\n'))
+                            + QStringLiteral("\n\n") + tr("They have no name in the results and the outputs."),
+                        QMessageBox::Ok, this);
+        QPushButton* add = box.addButton(tr("Competitors..."), QMessageBox::ActionRole);
+        box.exec();
+        if (box.clickedButton() == add) {
+            e->ignore();
+            competitorManagement();
+            return;
+        }
+    }
+
     bool anyOpen = false;
     for (auto& d : m_devices)
         if (d && d->isOpen())

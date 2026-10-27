@@ -37,6 +37,61 @@ bool ReportFormat::layoutPerRun(ReportType type)
     return type == ReportType::StartList || type == ReportType::RunRanking || type == ReportType::RankingAfterRun;
 }
 
+ReportFormat ReportFormat::forRun(const ReportFormat& f, ReportType type, int from, int to)
+{
+    using namespace ReportField;
+    ReportFormat out = f;
+    if (from == to)
+        return out;
+    if (type == ReportType::StartList) {
+        // run 1 shows the list points, the next runs the time of the previous run
+        for (auto& c : out.fields) {
+            const bool previous = (from == 1 && c.field == Points) || (from > 1 && c.field == RunTime + from - 1);
+            if (!previous)
+                continue;
+            if (to == 1) {
+                c.field = Points;
+                c.title = Tr::tr("List points");
+            } else {
+                c.field = RunTime + to - 1;
+                c.title.clear();
+            }
+        }
+    } else if (type == ReportType::RankingAfterRun) {
+        // runs after `to` do not exist yet; the missing runs come after the last run column
+        // (or before the time when there is none)
+        int last = -1;
+        QList<ReportColumn> cols;
+        for (const auto& c : out.fields) {
+            const bool runCol = c.field > RunTimeRank && c.field <= RunTimeRank + kMaxRuns;
+            if (runCol && c.field > RunTimeRank + to)
+                continue;
+            cols << c;
+            if (runCol)
+                last = cols.size() - 1;
+        }
+        int at = last + 1;
+        if (last < 0) {
+            at = cols.size();
+            for (int i = 0; i < cols.size(); ++i)
+                if (cols.at(i).field == Time) {
+                    at = i;
+                    break;
+                }
+        }
+        for (int r = 1; r <= qMin(to, kMaxRuns); ++r) {
+            bool has = false;
+            for (const auto& c : cols)
+                has = has || c.field == RunTimeRank + r;
+            if (has)
+                continue;
+            cols.insert(at++, ReportColumn{ RunTimeRank + r, 2, 12 });
+        }
+        out.fields = cols;
+    }
+    return out;
+}
+
 QString ReportFormat::storageId(ReportType type, int run)
 {
     if (!layoutPerRun(type) || run < 1)

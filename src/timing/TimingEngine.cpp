@@ -21,6 +21,7 @@ void TimingEngine::setRun(int run)
     m_run = qBound(1, run, kMaxRuns);
     m_follow.clear();
     m_typed.clear();
+    startedIntoStartList();
     rebuildFollow();
 }
 
@@ -346,7 +347,41 @@ QVector<int> TimingEngine::onCourse() const
 void TimingEngine::afterRecordChange(int bib)
 {
     recompute(bib);
+    startedIntoStartList();
     rebuildFollow();
+}
+
+// A competitor who started is in the start list, also when the number came from the
+// timing device (CP540) or was given to the start impulse later: placed by the start
+// time after the competitors who started before. Without it the run had results but an
+// empty start list (printed with 0 competitors).
+void TimingEngine::startedIntoStartList()
+{
+    const RunData& run = data();
+    QHash<int, qint64> started;
+    for (const auto& r : run.records)
+        if (r.point == Point::Start && r.bib > 0 && r.isActive() && r.hasTime()
+            && (!started.contains(r.bib) || r.dayTimeUs < started.value(r.bib)))
+            started.insert(r.bib, r.dayTimeUs);
+    QVector<int> missing;
+    for (auto it = started.cbegin(); it != started.cend(); ++it)
+        if (run.startPosition(it.key()) < 0)
+            missing << it.key();
+    if (missing.isEmpty())
+        return;
+    std::sort(missing.begin(), missing.end(), [&](int a, int b) { return started.value(a) < started.value(b); });
+    QVector<StartEntry> sl = run.startList;
+    for (int bib : missing) {
+        const qint64 t = started.value(bib);
+        int pos = 0;
+        for (int i = 0; i < sl.size(); ++i)
+            if (started.contains(sl.at(i).bib) && started.value(sl.at(i).bib) <= t)
+                pos = i + 1;
+        StartEntry e;
+        e.bib = bib;
+        sl.insert(pos, e);
+    }
+    m_ev->setStartList(m_run, sl);
 }
 
 int TimingEngine::addRecord(TimeRecord rec)

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(OpenSkiPro2 VERSION 0.7.1 LANGUAGES CXX)
+project(OpenSkiPro2 VERSION 0.7.5 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
