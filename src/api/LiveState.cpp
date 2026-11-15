@@ -50,6 +50,12 @@ void LiveState::reset()
     m_prevRank.clear();
     for (auto& v : m_interTimes)
         v.clear();
+    for (auto& v : m_interTotals)
+        v.clear();
+    m_groupInterTimes.clear();
+    m_groupInterTotals.clear();
+    m_groupsOf.clear();
+    m_withTotal = false;
 }
 
 LiveState::Competitor LiveState::compute(const RunData& run, int bib)
@@ -166,16 +172,58 @@ void LiveState::computeRanks(const Event& ev)
     m_runRank = toMap(Ranking::runRanking(ev, m_run));
     m_totalRank = toMap(Ranking::finalRanking(ev, m_run));
     m_prevRank = m_run > 1 ? toMap(Ranking::finalRanking(ev, m_run - 1)) : QHash<int, Rank>();
-    // intermediate ranks among everybody of the run who passed the intermediate
+    // intermediate ranks among everybody of the run who passed the intermediate, also
+    // inside each output group
     const Precision prec = ev.precision();
+    const auto& groups = ev.params().outputGroups;
+    m_groupsOf.clear();
+    for (auto it = m_state.cbegin(); it != m_state.cend(); ++it) {
+        const ::Competitor* comp = ev.competitorByBib(it.key());
+        if (!comp)
+            continue;
+        for (int g = 0; g < groups.size(); ++g)
+            if (groups.at(g).matches(*comp))
+                m_groupsOf[it.key()] << g;
+    }
+    // the total at an intermediate (run 2+ of a total-of-runs race): the total before the
+    // run + the intermediate, ranked among those of the run who passed it (docs/api.md 4.8)
+    const auto& type = ev.params().type;
+    m_withTotal = m_run > 1 && type.finalType == FinalRankingType::TotalOfRuns && type.runsUsed[size_t(m_run - 1)];
+    m_groupInterTimes = QVector<std::array<QVector<qint64>, kMaxInter>>(groups.size());
+    m_groupInterTotals = QVector<std::array<QVector<qint64>, kMaxInter>>(groups.size());
     for (int i = 0; i < kMaxInter; ++i) {
         QVector<qint64>& times = m_interTimes[size_t(i)];
+        QVector<qint64>& totals = m_interTotals[size_t(i)];
         times.clear();
+        totals.clear();
         for (auto it = m_state.cbegin(); it != m_state.cend(); ++it)
-            if (!ev.isForerunner(it.key()) && it->state != State::DNS && it->state != State::NPS && it->interMs[size_t(i)] >= 0)
-                times << TimeUtil::truncateMs(it->interMs[size_t(i)], prec);
+            if (!ev.isForerunner(it.key()) && it->state != State::DNS && it->state != State::NPS && it->interMs[size_t(i)] >= 0) {
+                const qint64 shown = TimeUtil::truncateMs(it->interMs[size_t(i)], prec);
+                times << shown;
+                for (int g : m_groupsOf.value(it.key()))
+                    m_groupInterTimes[g][size_t(i)] << shown;
+                const qint64 total = interTotal(it.key(), shown);
+                if (total >= 0) {
+                    totals << total;
+                    for (int g : m_groupsOf.value(it.key()))
+                        m_groupInterTotals[g][size_t(i)] << total;
+                }
+            }
         std::sort(times.begin(), times.end());
+        std::sort(totals.begin(), totals.end());
+        for (auto& gt : m_groupInterTimes)
+            std::sort(gt[size_t(i)].begin(), gt[size_t(i)].end());
+        for (auto& gt : m_groupInterTotals)
+            std::sort(gt[size_t(i)].begin(), gt[size_t(i)].end());
     }
+}
+
+qint64 LiveState::interTotal(int bib, qint64 shownInterMs) const
+{
+    if (!m_withTotal)
+        return TimeUtil::kNoTime;
+    const auto it = m_prevRank.constFind(bib);
+    return it == m_prevRank.constEnd() || it->shownMs < 0 ? TimeUtil::kNoTime : it->shownMs + shownInterMs;
 }
 
 QJsonObject LiveState::rankJson(const QHash<int, Rank>& ranks, int bib, qint64 penaltyMs, bool withPenalty, Precision p) const
@@ -193,23 +241,50 @@ QJsonObject LiveState::rankJson(const QHash<int, Rank>& ranks, int bib, qint64 p
     return o;
 }
 
-QJsonArray LiveState::interJson(const Competitor& c, int interCount, Precision p) const
+QJsonArray LiveState::interJson(int bib, const Competitor& c, int interCount, Precision p) const
 {
+    // rank / gap of `value` among the sorted values of everybody (and of each group of the bib)
+    auto ranked = [this, bib, p](QJsonObject& o, qint64 value, const QVector<qint64>& all,
+                                 const QVector<std::array<QVector<qint64>, kMaxInter>>& byGroup, int i) {
+        const auto pos = std::lower_bound(all.cbegin(), all.cend(), value);
+        const bool found = pos != all.cend() && *pos == value;
+        o.insert(QStringLiteral("rank"), found ? QJsonValue(int(pos - all.cbegin()) + 1) : QJsonValue(QJsonValue::Null));
+        ApiJson::putGap(o, found ? value - all.first() : -1, p);
+        QJsonArray groups;
+        if (found)
+            for (int g : m_groupsOf.value(bib)) {
+                const QVector<qint64>& gt = byGroup.at(g)[size_t(i)];
+                const auto gpos = std::lower_bound(gt.cbegin(), gt.cend(), value);
+                if (gpos == gt.cend() || *gpos != value)
+                    continue;
+                QJsonObject go;
+                go.insert(QStringLiteral("group"), g);
+                go.insert(QStringLiteral("rank"), int(gpos - gt.cbegin()) + 1);
+                ApiJson::putGap(go, value - gt.first(), p);
+                groups << go;
+            }
+        o.insert(QStringLiteral("groupRanks"), groups);
+    };
     QJsonArray a;
     for (int i = 0; i < interCount && i < kMaxInter; ++i) {
         const qint64 ms = c.interMs[size_t(i)];
         if (ms < 0)
             continue;
         const qint64 shown = TimeUtil::truncateMs(ms, p);
-        const QVector<qint64>& times = m_interTimes[size_t(i)];
         QJsonObject o;
         o.insert(QStringLiteral("point"), i + 1);
         o.insert(QStringLiteral("dayMs"), ApiJson::dayMs(c.interUs[size_t(i)]));
         ApiJson::putTime(o, QStringLiteral("time"), shown, p);
-        const auto pos = std::lower_bound(times.cbegin(), times.cend(), shown);
-        const bool ranked = pos != times.cend() && *pos == shown;
-        o.insert(QStringLiteral("rank"), ranked ? QJsonValue(int(pos - times.cbegin()) + 1) : QJsonValue(QJsonValue::Null));
-        ApiJson::putGap(o, ranked ? shown - times.first() : -1, p);
+        ranked(o, shown, m_interTimes[size_t(i)], m_groupInterTimes, i);
+        QJsonValue total = QJsonValue::Null;
+        const qint64 t = interTotal(bib, shown);
+        if (t >= 0) {
+            QJsonObject to;
+            ApiJson::putTime(to, QStringLiteral("time"), t, p);
+            ranked(to, t, m_interTotals[size_t(i)], m_groupInterTotals, i);
+            total = to;
+        }
+        o.insert(QStringLiteral("total"), total);
         a << o;
     }
     return a;
@@ -237,7 +312,7 @@ QJsonObject LiveState::competitorEvent(const Event& ev, const Change& ch) const
     o.insert(QStringLiteral("startDayMs"), ApiJson::dayMs(c.startUs));
     o.insert(QStringLiteral("finishDayMs"), ApiJson::dayMs(c.finishUs));
     o.insert(QStringLiteral("lastPoint"), c.lastPoint);
-    o.insert(QStringLiteral("inter"), interJson(c, ev.interCount(), prec));
+    o.insert(QStringLiteral("inter"), interJson(ch.bib, c, ev.interCount(), prec));
     QJsonObject run;
     if (c.timeMs >= 0) {
         run = rankJson(m_runRank, ch.bib, c.penaltyMs, true, prec);
@@ -315,7 +390,7 @@ QJsonObject LiveState::live(const Event& ev, const TimingEngine* engine) const
         e.insert(QStringLiteral("competitor"), cache.get(bib));
         e.insert(QStringLiteral("startDayMs"), ApiJson::dayMs(c.startUs));
         e.insert(QStringLiteral("lastPoint"), c.lastPoint);
-        e.insert(QStringLiteral("inter"), interJson(c, ev.interCount(), prec));
+        e.insert(QStringLiteral("inter"), interJson(bib, c, ev.interCount(), prec));
         e.insert(QStringLiteral("previous"), orNull(rankJson(m_prevRank, bib, 0, false, prec)));
         onCourse << e;
     }

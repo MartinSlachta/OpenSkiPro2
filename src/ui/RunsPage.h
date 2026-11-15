@@ -18,6 +18,7 @@ public:
 
 Q_SIGNALS:
     void timingRequested(int run);
+    void offlineTimingRequested(int run);
 
 private:
     void setRun(int run);

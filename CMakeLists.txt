@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(OpenSkiPro2 VERSION 0.7.5 LANGUAGES CXX)
+project(OpenSkiPro2 VERSION 0.11.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -47,6 +47,7 @@ add_library(osp_core STATIC
     src/report/ReportBuilder.h     src/report/ReportBuilder.cpp
     src/report/ReportRenderer.h    src/report/ReportRenderer.cpp
     src/report/RefereeReport.h     src/report/RefereeReport.cpp
+    src/report/FreeHeader.h        src/report/FreeHeader.cpp
     src/app/AppSettings.h          src/app/AppSettings.cpp
     src/app/SoundPlayer.h          src/app/SoundPlayer.cpp
     src/api/ApiJson.h              src/api/ApiJson.cpp
@@ -89,6 +90,7 @@ qt_add_executable(OpenSkiPro2 WIN32
     src/ui/dialogs/PrintingParametersDialog.h src/ui/dialogs/PrintingParametersDialog.cpp
     src/ui/dialogs/LogoPositionsDialog.h      src/ui/dialogs/LogoPositionsDialog.cpp
     src/ui/dialogs/HeaderDialog.h             src/ui/dialogs/HeaderDialog.cpp
+    src/ui/dialogs/FreeHeaderDialog.h         src/ui/dialogs/FreeHeaderDialog.cpp
     src/ui/dialogs/CompetitorDialog.h         src/ui/dialogs/CompetitorDialog.cpp
     src/ui/dialogs/CompetitorFieldsDialog.h   src/ui/dialogs/CompetitorFieldsDialog.cpp
     src/ui/dialogs/CategoriesDialog.h         src/ui/dialogs/CategoriesDialog.cpp

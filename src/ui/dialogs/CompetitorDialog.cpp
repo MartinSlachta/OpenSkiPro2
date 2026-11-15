@@ -2,6 +2,7 @@
 #include "core/Event.h"
 #include "ui/UiHelpers.h"
 
+#include <QCheckBox>
 #include <QComboBox>
 #include <QFormLayout>
 #include <QGroupBox>
@@ -55,6 +56,11 @@ CompetitorDialog::CompetitorDialog(Event* ev, const Competitor& c, bool isNew, Q
     addLine(lf, CompField::Bib, 70);
     addLine(lf, CompField::Transponder, 160);
     addLine(lf, CompField::LastName);
+    m_upperLastName = new QCheckBox(tr("Last name in capitals"), this);
+    m_upperLastName->setToolTip(tr("The last name is saved in capitals (also in the import of a file), "
+                                   "a setting of the event"));
+    m_upperLastName->setChecked(fields.upperLastName);
+    lf->addRow(QString(), m_upperLastName);
     addLine(lf, CompField::FirstName);
     addLine(lf, CompField::Code, 120);
     auto* gender = new QComboBox(this);
@@ -65,7 +71,7 @@ CompetitorDialog::CompetitorDialog(Event* ev, const Competitor& c, bool isNew, Q
     lf->addRow(fields.label(CompField::Gender) + QStringLiteral(" :"), gender);
     m_editors.insert(CompField::Gender, gender);
     addLine(lf, CompField::Year, 70);
-    addLine(lf, CompField::Category, 120);
+    addLine(lf, CompField::Category, 180);
     addCombo(lf, CompField::Nation);
     addCombo(lf, CompField::Region);
     addCombo(lf, CompField::Club);
@@ -81,12 +87,42 @@ CompetitorDialog::CompetitorDialog(Event* ev, const Competitor& c, bool isNew, Q
     cols->addWidget(right, 1);
     lay->addLayout(cols);
     lay->addLayout(UiHelpers::okCancelRow(this));
+    // the category follows the gender and the year while it is the one they gave
+    connect(gender, &QComboBox::currentIndexChanged, this, &CompetitorDialog::updateCategory);
+    if (auto* year = qobject_cast<QLineEdit*>(m_editors.value(CompField::Year)))
+        connect(year, &QLineEdit::textChanged, this, &CompetitorDialog::updateCategory);
     setCompetitor(c);
     resize(820, 0);
 }
 
+QString CompetitorDialog::autoCategory() const
+{
+    const auto* gender = qobject_cast<QComboBox*>(m_editors.value(CompField::Gender));
+    const auto* year = qobject_cast<QLineEdit*>(m_editors.value(CompField::Year));
+    if (!gender || !year)
+        return QString();
+    return m_ev->categories().categoryFor(Gender(gender->currentData().toInt()), year->text().trimmed().toInt());
+}
+
+// Empty category = computed when saved: the form shows it as "auto: ...". A category that
+// the old gender / year gave is cleared when they change, so it is computed again.
+void CompetitorDialog::updateCategory()
+{
+    auto* category = qobject_cast<QLineEdit*>(m_editors.value(CompField::Category));
+    if (!category || m_loading)
+        return;
+    const QString now = autoCategory();
+    if (!m_lastAuto.isEmpty() && category->text().trimmed() == m_lastAuto)
+        category->clear();
+    m_lastAuto = now;
+    category->setPlaceholderText(m_ev->categories().categories.isEmpty()
+                                     ? QString()
+                                     : tr("auto: %1").arg(now.isEmpty() ? QStringLiteral("-") : now));
+}
+
 void CompetitorDialog::setCompetitor(const Competitor& c)
 {
+    m_loading = true;
     m_original = c;
     for (auto it = m_editors.cbegin(); it != m_editors.cend(); ++it) {
         if (auto* e = qobject_cast<QLineEdit*>(it.value())) {
@@ -101,6 +137,9 @@ void CompetitorDialog::setCompetitor(const Competitor& c)
                 cb->setCurrentText(c.value(it.key()));
         }
     }
+    m_loading = false;
+    m_lastAuto.clear(); // the category of the competitor stays as it is
+    updateCategory();
     if (auto* last = qobject_cast<QLineEdit*>(m_editors.value(CompField::LastName)))
         last->setFocus();
 }
@@ -118,7 +157,8 @@ Competitor CompetitorDialog::competitor() const
                 c.setValue(it.key(), cb->currentText());
         }
     }
-    c.lastName = c.lastName.toUpper();
+    if (m_upperLastName->isChecked())
+        c.lastName = c.lastName.toUpper();
     if (c.category.isEmpty())
         c.category = m_ev->categories().categoryFor(c.gender, c.year);
     return c;
@@ -131,16 +171,24 @@ void CompetitorDialog::accept()
         QMessageBox::warning(this, windowTitle(), tr("Enter the name of the competitor."));
         return;
     }
+    // the times, the start list and the results belong to the bib: it must be unique
+    // (to swap two bibs, give one of them a free bib first, e.g. +1000)
     if (c.bib > 0) {
         for (const auto& other : m_ev->competitors()) {
             if (other.bib == c.bib && other.id != c.id) {
-                if (QMessageBox::question(this, windowTitle(),
-                                          tr("The bib %1 is already used by %2. Keep it anyway?").arg(c.bib).arg(other.fullName()))
-                    != QMessageBox::Yes)
-                    return;
-                break;
+                QMessageBox::warning(this, windowTitle(), tr("The bib %1 is already used by %2.").arg(c.bib).arg(other.fullName()));
+                if (auto* e = qobject_cast<QLineEdit*>(m_editors.value(CompField::Bib))) {
+                    e->setFocus();
+                    e->selectAll();
+                }
+                return;
             }
         }
+    }
+    if (m_ev->params().fields.upperLastName != m_upperLastName->isChecked()) {
+        EventParams p = m_ev->params();
+        p.fields.upperLastName = m_upperLastName->isChecked();
+        m_ev->setParams(p);
     }
     QDialog::accept();
 }

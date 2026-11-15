@@ -27,7 +27,7 @@ public:
     Event* event() const { return m_event; }
     static QString eventPath(int slot);
     bool openEventFile(const QString& path);
-    void openTiming(int run);
+    void openTiming(int run, bool offline = false);
     void showRunsPage();
     void showFisStatus();
 

@@ -407,6 +407,9 @@ int TimingEngine::handleImpulse(const TimingImpulse& imp)
         return 0;
     }
 
+    if (imp.downloaded)
+        return handleDownloaded(imp);
+
     // modifications of existing records
     if (imp.type == TimingImpulse::Type::Cancelled || imp.type == TimingImpulse::Type::IdRemoved
         || imp.type == TimingImpulse::Type::NewId) {
@@ -515,6 +518,72 @@ int TimingEngine::handleImpulse(const TimingImpulse& imp)
         Q_EMIT competitorFinished(rec.bib);
     if (rec.bib == 0 && rec.isActive())
         Q_EMIT unassignedRecord(m_run, id);
+    return id;
+}
+
+int TimingEngine::handleDownloaded(const TimingImpulse& imp)
+{
+    // Off-line timing: a time read from the memory of the device (CP540 #DL). The number comes
+    // only from the device (keyboard channels), the operator assigns the others afterwards.
+    // A time already known (same device, channel, sequential number and time) is not added again;
+    // the state sent by the device (number removed / new number / cancelled) is applied to it.
+    qint64 dayTime = imp.dayTimeUs;
+    if (imp.day >= 0) {
+        if (data().referenceDay < 0)
+            m_ev->setReferenceDay(m_run, imp.day);
+        dayTime += qint64(imp.day - data().referenceDay) * TimeUtil::kUsPerDay;
+    }
+    const int point = pointForChannel(imp.device, imp.channel);
+    if (point < 0)
+        return 0;
+
+    const TimeRecord* known = nullptr;
+    for (const auto& r : data().records)
+        if (r.device == imp.device && r.deviceChannel == imp.channel && r.deviceSeq == imp.seq && r.dayTimeUs == dayTime
+            && imp.seq > 0)
+            known = &r;
+
+    if (known) {
+        TimeRecord rec = *known;
+        const int oldBib = rec.bib;
+        if (imp.type == TimingImpulse::Type::Cancelled || imp.type == TimingImpulse::Type::StatusDNF)
+            rec.flags |= RecordFlag::Cancelled;
+        else if (imp.type == TimingImpulse::Type::IdRemoved)
+            rec.bib = 0;
+        else if (imp.type == TimingImpulse::Type::NewId)
+            rec.bib = imp.bib;
+        else
+            return 0; // already downloaded
+        if (rec.bib == oldBib && rec.flags == known->flags)
+            return 0;
+        m_ev->saveRecord(m_run, rec);
+        recompute(oldBib);
+        afterRecordChange(rec.bib);
+        return rec.id;
+    }
+
+    TimeRecord rec;
+    rec.point = point;
+    rec.dayTimeUs = dayTime;
+    rec.device = imp.device;
+    rec.deviceChannel = imp.channel;
+    rec.deviceSeq = imp.seq;
+    if (imp.manual)
+        rec.flags |= RecordFlag::DeviceKey;
+    if (imp.type == TimingImpulse::Type::Cancelled || imp.type == TimingImpulse::Type::StatusDNF)
+        rec.flags |= RecordFlag::Cancelled;
+    rec.bib = imp.type == TimingImpulse::Type::IdRemoved ? 0 : imp.bib;
+    // second time of the same competitor within 5 s: inactive (like the live timing)
+    if (rec.bib > 0 && rec.isActive())
+        for (const auto& r : data().records)
+            if (r.bib == rec.bib && r.point == point && r.isActive() && r.hasTime() && qAbs(r.dayTimeUs - dayTime) < kDuplicateWindowUs) {
+                rec.flags |= RecordFlag::Inactive;
+                break;
+            }
+    const int id = addRecord(rec);
+    // DNF given on the device (cancelled time with a typed number)
+    if (id && imp.type == TimingImpulse::Type::StatusDNF && imp.bib > 0 && !isOut(imp.bib))
+        setStatus(imp.bib, ResultStatus::DNF, QString(), dayTime);
     return id;
 }
 

@@ -85,6 +85,25 @@ static QString rankedCell(const Ctx& c, int field, const RankedEntry& e, bool cl
             return QStringLiteral("%1 (%2)").arg(TimeUtil::formatResult(t, c.prec)).arg(e.interRank[size_t(i)]);
         return TimeUtil::formatResult(t, c.prec);
     }
+    if (field > Sector && field <= Sector + kMaxSectors) {
+        const qint64 t = e.sectorMs[size_t(field - Sector - 1)];
+        return t >= 0 ? TimeUtil::formatResult(t, c.prec) : QString();
+    }
+    if (field > SectorRank && field <= SectorRank + kMaxSectors) {
+        const int k = field - SectorRank - 1;
+        return classified && e.sectorRank[size_t(k)] > 0 && e.sectorMs[size_t(k)] >= 0
+            ? QStringLiteral("(%1)").arg(e.sectorRank[size_t(k)])
+            : QString();
+    }
+    if (field > SectorTimeRank && field <= SectorTimeRank + kMaxSectors) {
+        const int k = field - SectorTimeRank - 1;
+        const qint64 t = e.sectorMs[size_t(k)];
+        if (t < 0)
+            return QString();
+        if (classified && e.sectorRank[size_t(k)] > 0)
+            return QStringLiteral("%1 (%2)").arg(TimeUtil::formatResult(t, c.prec)).arg(e.sectorRank[size_t(k)]);
+        return TimeUtil::formatResult(t, c.prec);
+    }
     switch (field) {
     case Rank: return classified ? QString::number(e.rank) : QString();
     case Time: return classified ? TimeUtil::formatResult(e.shownMs, c.prec) : QString();
@@ -522,6 +541,7 @@ ReportDocument build(const Event& ev, const ReportFormat& format, int run)
         buildStartList(c, doc);
         break;
     case ReportType::RunRanking:
+    case ReportType::RunAnalysis:
         fillRanking(c, doc, Ranking::runRanking(ev, doc.run), groups);
         break;
     case ReportType::RankingAfterRun:
@@ -544,7 +564,8 @@ ReportDocument build(const Event& ev, const ReportFormat& format, int run)
         buildPaper(c, doc);
         break;
     }
-    const bool ranking = format.type == ReportType::RunRanking || format.type == ReportType::RankingAfterRun
+    const bool ranking = format.type == ReportType::RunRanking || format.type == ReportType::RunAnalysis
+        || format.type == ReportType::RankingAfterRun
         || format.type == ReportType::FinalRanking || format.type == ReportType::FinalRankingPoints;
     if (!groups.isEmpty() && !ranking)
         splitByGroups(doc, groups);

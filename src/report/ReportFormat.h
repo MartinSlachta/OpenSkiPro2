@@ -16,8 +16,9 @@ enum class ReportType {
     TimingPaper,
     FinalRankingPoints,   // final ranking with the race points (FIS points + penalty)
     PenaltyCalculation,   // FIS penalty calculation sheet
+    RunAnalysis,          // run ranking with the times and ranks of the sectors
 };
-constexpr int kReportTypeLast = int(ReportType::PenaltyCalculation);
+constexpr int kReportTypeLast = int(ReportType::RunAnalysis);
 
 // Report field identifiers. Competitor fields use their own ids (1..38).
 namespace ReportField {
@@ -38,6 +39,9 @@ constexpr int RunTime = 200;       // + run number (201..209): time of run k
 constexpr int RunTimeRank = 210;   // + run number (211..219): "time (rank)" of run k
 constexpr int RunRank = 220;       // + run number (221..229): rank of run k only
 constexpr int Inter = 300;         // + inter number (301..303): intermediate time (rank)
+constexpr int Sector = 310;        // + sector number (311..314): time of the sector
+constexpr int SectorRank = 320;    // + sector number (321..324): rank of the sector
+constexpr int SectorTimeRank = 330; // + sector number (331..334): "time (rank)" of the sector
 constexpr int RecSeq = 401;
 constexpr int RecStatus = 402;
 constexpr int RecNum = 403;
@@ -95,6 +99,9 @@ struct ReportFormat {
     // ranking after run: one "time (rank)" column per run up to `to`).
     static ReportFormat forRun(const ReportFormat& f, ReportType type, int from, int to);
     static QString typeName(ReportType type);
+    // Run analysis: the sector columns of the layout replaced by `sectors` sectors
+    // (intermediates of the event + 1), each as time + rank.
+    static ReportFormat withSectors(const ReportFormat& f, int sectors);
 };
 
 // Fields that can be used in a report of the given type.

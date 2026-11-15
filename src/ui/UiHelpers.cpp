@@ -1,4 +1,5 @@
 #include "UiHelpers.h"
+#include "core/Event.h"
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -6,8 +7,11 @@
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QPainter>
+#include <QPlainTextEdit>
+#include <QSignalBlocker>
 #include <QStyledItemDelegate>
 #include <QTableView>
 
@@ -175,6 +179,52 @@ QString appStyleSheet()
         "QTableView#paperGrid { background: #ffffe1; alternate-background-color: #fff8c8; }"
         "QHeaderView::section { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f4f7fb, stop:1 #d5e0ee);"
         "  border: 1px solid #a7b8cf; padding: 2px 4px; }");
+}
+
+void formTextEdit(QPlainTextEdit* edit, int maxLines)
+{
+    edit->setTabChangesFocus(true);
+    if (maxLines <= 0)
+        return;
+    // the lines over the limit are joined to the last one (a paste of several lines)
+    QObject::connect(edit, &QPlainTextEdit::textChanged, edit, [edit, maxLines] {
+        if (edit->blockCount() <= maxLines)
+            return;
+        QStringList lines = edit->toPlainText().split(QLatin1Char('\n'));
+        const QStringList rest = lines.mid(maxLines);
+        lines = lines.mid(0, maxLines);
+        for (const QString& l : rest)
+            if (!l.trimmed().isEmpty())
+                lines.last() += (lines.last().trimmed().isEmpty() ? QString() : QStringLiteral(" ")) + l.trimmed();
+        const int pos = qMin(edit->textCursor().position(), int(lines.join(QLatin1Char('\n')).size()));
+        const QSignalBlocker block(edit);
+        edit->setPlainText(lines.join(QLatin1Char('\n')));
+        QTextCursor c = edit->textCursor();
+        c.setPosition(pos);
+        edit->setTextCursor(c);
+    });
+}
+
+void warnDuplicateBibs(QWidget* parent, const Event& ev)
+{
+    const QVector<int> twice = ev.duplicateBibs();
+    if (twice.isEmpty())
+        return;
+    QStringList lines;
+    for (int bib : twice) {
+        QStringList names;
+        for (const auto& c : ev.competitors())
+            if (c.bib == bib)
+                names << c.fullName();
+        lines << QStringLiteral("%1: %2").arg(bib).arg(names.join(QStringLiteral(", ")));
+    }
+    QString text = QCoreApplication::translate("UiHelpers", "These bibs are used by several competitors:") + QStringLiteral("\n\n")
+        + QStringList(lines.mid(0, 15)).join(QLatin1Char('\n'));
+    if (lines.size() > 15)
+        text += QStringLiteral("\n...");
+    text += QStringLiteral("\n\n")
+        + QCoreApplication::translate("UiHelpers", "The times and the results belong to the bib: give each competitor a bib of their own.");
+    QMessageBox::warning(parent, QCoreApplication::translate("UiHelpers", "Bibs"), text);
 }
 
 } // namespace UiHelpers

@@ -1,6 +1,7 @@
 #include "ImpulseCommentDialog.h"
 #include "core/RunData.h"
 #include "core/TimeUtil.h"
+#include "ui/UiHelpers.h"
 
 #include <QDialogButtonBox>
 #include <QFormLayout>
@@ -31,6 +32,7 @@ ImpulseCommentDialog::ImpulseCommentDialog(const TimeRecord& rec, int seq, QWidg
 
     lay->addWidget(new QLabel(tr("Comment:"), this));
     m_edit = new QPlainTextEdit(rec.note, this);
+    UiHelpers::formTextEdit(m_edit);
     m_edit->setTabChangesFocus(true);
     m_edit->setMinimumSize(360, 110);
     lay->addWidget(m_edit);

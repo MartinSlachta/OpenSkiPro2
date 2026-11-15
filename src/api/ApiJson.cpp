@@ -465,6 +465,93 @@ QJsonObject runResults(const Event& ev, int runNo, int group)
     const QHash<int, QJsonArray> groups = groupRanks(ev, all);
     CompetitorCache cache(ev);
 
+    // rank and gap of each intermediate in each output group, by bib and intermediate
+    QHash<int, std::array<QJsonArray, kMaxInter>> interGroups;
+    for (int g = 0; g < ev.params().outputGroups.size(); ++g) {
+        const RankingResult sub = inGroup(ev, all, g);
+        std::array<qint64, kMaxInter> best{ {-1, -1, -1} };
+        for (const auto& e : sub.classified)
+            for (int i = 0; i < kMaxInter; ++i) {
+                const qint64 v = e.interMs[size_t(i)] >= 0 ? TimeUtil::truncateMs(e.interMs[size_t(i)], prec) : -1;
+                if (v >= 0 && (best[size_t(i)] < 0 || v < best[size_t(i)]))
+                    best[size_t(i)] = v;
+            }
+        for (const auto& e : sub.classified)
+            for (int i = 0; i < kMaxInter; ++i) {
+                if (e.interMs[size_t(i)] < 0 || e.interRank[size_t(i)] <= 0)
+                    continue;
+                QJsonObject go;
+                go.insert(QStringLiteral("group"), g);
+                go.insert(QStringLiteral("rank"), e.interRank[size_t(i)]);
+                putGap(go, TimeUtil::truncateMs(e.interMs[size_t(i)], prec) - best[size_t(i)], prec);
+                interGroups[e.bib][size_t(i)] << go;
+            }
+    }
+
+    // the total at each intermediate in run 2+ of a total-of-runs race: the total before the
+    // run + the intermediate, ranked among the classified of the run (also by group)
+    const auto& type = ev.params().type;
+    QHash<int, qint64> before;
+    if (runNo > 1 && type.finalType == FinalRankingType::TotalOfRuns && type.runsUsed[size_t(runNo - 1)])
+        for (const auto& e : Ranking::finalRanking(ev, runNo - 1).classified)
+            before.insert(e.bib, e.shownMs);
+    auto interTotal = [&](const RankedEntry& e, int i) {
+        const auto it = before.constFind(e.bib);
+        if (it == before.constEnd() || e.interMs[size_t(i)] < 0)
+            return TimeUtil::kNoTime;
+        return *it + TimeUtil::truncateMs(e.interMs[size_t(i)], prec);
+    };
+    QHash<int, QVector<int>> groupCache;
+    auto groupsOf = [&](int bib) -> const QVector<int>& {
+        auto it = groupCache.find(bib);
+        if (it == groupCache.end()) {
+            QVector<int> gs;
+            if (const Competitor* comp = ev.competitorByBib(bib))
+                for (int g = 0; g < ev.params().outputGroups.size(); ++g)
+                    if (ev.params().outputGroups.at(g).matches(*comp))
+                        gs << g;
+            it = groupCache.insert(bib, gs);
+        }
+        return *it;
+    };
+    std::array<QVector<qint64>, kMaxInter> totals;
+    QHash<int, std::array<QVector<qint64>, kMaxInter>> groupTotals; // by group
+    for (const auto& e : res.classified)
+        for (int i = 0; i < kMaxInter; ++i) {
+            const qint64 t = interTotal(e, i);
+            if (t < 0)
+                continue;
+            totals[size_t(i)] << t;
+            for (int g : groupsOf(e.bib))
+                groupTotals[g][size_t(i)] << t;
+        }
+    for (auto& v : totals)
+        std::sort(v.begin(), v.end());
+    for (auto& a : groupTotals)
+        for (auto& v : a)
+            std::sort(v.begin(), v.end());
+    auto totalJson = [&](const RankedEntry& e, int i) -> QJsonValue {
+        const qint64 t = interTotal(e, i);
+        if (t < 0)
+            return QJsonValue::Null;
+        const QVector<qint64>& all = totals[size_t(i)];
+        QJsonObject o;
+        putTime(o, QStringLiteral("time"), t, prec);
+        o.insert(QStringLiteral("rank"), int(std::lower_bound(all.cbegin(), all.cend(), t) - all.cbegin()) + 1);
+        putGap(o, t - all.first(), prec);
+        QJsonArray groups;
+        for (int g : groupsOf(e.bib)) {
+            const QVector<qint64>& gt = groupTotals[g][size_t(i)];
+            QJsonObject go;
+            go.insert(QStringLiteral("group"), g);
+            go.insert(QStringLiteral("rank"), int(std::lower_bound(gt.cbegin(), gt.cend(), t) - gt.cbegin()) + 1);
+            putGap(go, t - gt.first(), prec);
+            groups << go;
+        }
+        o.insert(QStringLiteral("groupRanks"), groups);
+        return o;
+    };
+
     // best intermediate times of the ranking, for the gaps
     std::array<qint64, kMaxInter> bestInter{ {-1, -1, -1} };
     for (const auto& e : res.classified)
@@ -493,6 +580,8 @@ QJsonObject runResults(const Event& ev, int runNo, int group)
             io.insert(QStringLiteral("rank"), v >= 0 && e.interRank[size_t(i)] > 0 ? QJsonValue(e.interRank[size_t(i)])
                                                                                      : QJsonValue(QJsonValue::Null));
             putGap(io, v >= 0 ? TimeUtil::truncateMs(v, prec) - bestInter[size_t(i)] : -1, prec);
+            io.insert(QStringLiteral("groupRanks"), interGroups.value(e.bib)[size_t(i)]);
+            io.insert(QStringLiteral("total"), totalJson(e, i));
             inter << io;
         }
         o.insert(QStringLiteral("inter"), inter);

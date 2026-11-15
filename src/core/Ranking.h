@@ -22,6 +22,8 @@ struct RankedEntry {
     std::array<int, kMaxRuns> runRank;   // rank of that run time in the run ranking
     std::array<qint64, kMaxInter> interMs;
     std::array<int, kMaxInter> interRank;
+    std::array<qint64, kMaxSectors> sectorMs;  // shown time of each sector (run analysis)
+    std::array<int, kMaxSectors> sectorRank;
     ResultStatus status = ResultStatus::NotProcessed;
     int statusRun = 0;                   // run in which the status applies (final ranking)
     QString reason;
@@ -32,6 +34,8 @@ struct RankedEntry {
         runRank.fill(0);
         interMs.fill(TimeUtil::kNoTime);
         interRank.fill(0);
+        sectorMs.fill(TimeUtil::kNoTime);
+        sectorRank.fill(0);
     }
 };
 

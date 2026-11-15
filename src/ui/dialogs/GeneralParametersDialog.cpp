@@ -27,6 +27,9 @@ GeneralParametersDialog::GeneralParametersDialog(const EventParams& p, QWidget* 
     m_discipline = new QPlainTextEdit(p.general.title2, titles);
     m_title->setMaximumHeight(52);
     m_discipline->setMaximumHeight(52);
+    // the two title lines of the documents: at most 2 lines each
+    UiHelpers::formTextEdit(m_title, 2);
+    UiHelpers::formTextEdit(m_discipline, 2);
     tf->addRow(tr("Title :"), m_title);
     tf->addRow(tr("Discipline :"), m_discipline);
     lay->addWidget(titles);

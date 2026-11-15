@@ -6,6 +6,7 @@
 #include <array>
 
 class Event;
+struct ReportDocument;
 class QCheckBox;
 class QComboBox;
 class QLabel;
@@ -34,6 +35,8 @@ private:
     void removeField();
     void moveField(int delta);
     void updateInfo();
+    void updateFitInfo(const ReportDocument& doc);
+    void fitWidths();               // Width of each column from its longest text
     void preview();
     void print();
     void exportFile();
@@ -61,4 +64,6 @@ private:
     QCheckBox* m_notClassified;
     QCheckBox* m_byGroups;
     QLabel* m_info;
+    QLabel* m_fitInfo;              // columns against the table width
+    bool m_loading = false;         // no updateInfo while a layout is being shown
 };

@@ -73,10 +73,13 @@ RunsPage::RunsPage(Event* ev, QWidget* parent)
     auto* bStart = UiHelpers::button(QStringLiteral("startlist"), tr("Start List"), this);
     auto* bTiming = UiHelpers::button(QStringLiteral("stopwatch"), tr("Timing"), this);
     bTiming->setMinimumHeight(48);
+    auto* bOffline = UiHelpers::button(QStringLiteral("stopwatch"), tr("Timing Off-line"), this);
+    bOffline->setToolTip(tr("Timing from the memory of the timing device: the times are downloaded after the run.\n"
+                            "Nothing is published on the API until the Off-line timing is closed."));
     auto* bModify = UiHelpers::button(QStringLiteral("modify"), tr("Modify Data"), this);
     auto* bUnproc = UiHelpers::button(QStringLiteral("check"), tr("Manage un-processed"), this);
     auto* bDelete = UiHelpers::button(QStringLiteral("delete"), tr("Delete Data"), this);
-    for (auto* b : { bStart, bTiming, bModify, bUnproc, bDelete }) {
+    for (auto* b : { bStart, bTiming, bOffline, bModify, bUnproc, bDelete }) {
         b->setMinimumWidth(190);
         buttons->addWidget(b);
     }
@@ -111,6 +114,7 @@ RunsPage::RunsPage(Event* ev, QWidget* parent)
     connect(next, &QToolButton::clicked, this, [this] { setRun(m_run + 1); });
     connect(bStart, &QPushButton::clicked, this, &RunsPage::editStartList);
     connect(bTiming, &QPushButton::clicked, this, [this] { Q_EMIT timingRequested(m_run); });
+    connect(bOffline, &QPushButton::clicked, this, [this] { Q_EMIT offlineTimingRequested(m_run); });
     connect(bModify, &QPushButton::clicked, this, &RunsPage::modifyData);
     connect(m_ranking, &QTableWidget::customContextMenuRequested, this, &RunsPage::rankingMenu);
     connect(m_ranking, &QTableWidget::cellDoubleClicked, this, [this](int row) {

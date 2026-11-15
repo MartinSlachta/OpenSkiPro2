@@ -185,8 +185,15 @@ void Cp540Device::processLine(const QByteArray& line)
         break;
     case Cp540Message::Kind::DownloadStart:
         m_downloading = true;
+        if (m_offline) {
+            m_downloadRun = msg.run;
+            m_downloadTimes = 0;
+            Q_EMIT downloadStarted(msg.run);
+        }
         break;
     case Cp540Message::Kind::DownloadEnd:
+        if (m_downloading && m_offline)
+            Q_EMIT downloadFinished(msg.run > 0 ? msg.run : m_downloadRun, m_downloadTimes);
         m_downloading = false;
         break;
     case Cp540Message::Kind::SerialNumber:
@@ -210,6 +217,35 @@ void Cp540Device::handleTimeMessage(const Cp540Message& msg)
     imp.dayTimeUs = msg.dayTimeUs;
     imp.day = msg.day;
     imp.bib = keyboard ? msg.bib : 0;
+
+    if (m_offline) {
+        // Off-line timing: only the times of a download (#DL) are used
+        if (msg.kind == Cp540Message::Kind::Time) {
+            Q_EMIT liveImpulseIgnored();
+            return;
+        }
+        if (msg.kind != Cp540Message::Kind::Answer || !m_downloading)
+            return;
+        imp.downloaded = true;
+        ++m_downloadTimes;
+        switch (msg.timeType) {
+        case Cp540Message::TimeType::Cancelled:
+            imp.type = (keyboard && msg.bib > 0) ? TimingImpulse::Type::StatusDNF : TimingImpulse::Type::Cancelled;
+            break;
+        case Cp540Message::TimeType::IdRemoved:
+            imp.type = TimingImpulse::Type::IdRemoved;
+            imp.bib = 0;
+            break;
+        case Cp540Message::TimeType::NewId:
+            imp.type = keyboard ? TimingImpulse::Type::NewId : TimingImpulse::Type::New;
+            break;
+        default:
+            imp.type = TimingImpulse::Type::New;
+            break;
+        }
+        Q_EMIT impulse(imp);
+        return;
+    }
 
     if (msg.kind == Cp540Message::Kind::Answer) {
         if (m_downloading)
@@ -279,4 +315,11 @@ void Cp540Device::sendCommand(const QByteArray& data)
         m_serial->write(Cp540Protocol::frame(data, true));
     else if (m_tcp && m_tcp->state() == QAbstractSocket::ConnectedState)
         m_tcp->write(Cp540Protocol::frame(data, false));
+}
+
+void Cp540Device::requestDownload(int run)
+{
+    m_downloadRun = run;
+    m_downloadTimes = 0;
+    sendCommand(Cp540Protocol::downloadRun(run));
 }

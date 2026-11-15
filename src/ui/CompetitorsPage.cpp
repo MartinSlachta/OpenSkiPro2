@@ -458,6 +458,7 @@ void CompetitorsPage::importFromEvent()
         c.id = 0;
     m_ev->addCompetitors(list);
     QMessageBox::information(this, tr("Import"), tr("%n competitor(s) imported.", nullptr, int(list.size())));
+    UiHelpers::warnDuplicateBibs(this, *m_ev);
 }
 
 void CompetitorsPage::duplicateSelected()

@@ -28,6 +28,7 @@ QString ReportFormat::storageId(ReportType type)
     case ReportType::TimingPaper: return QStringLiteral("timing_paper");
     case ReportType::FinalRankingPoints: return QStringLiteral("final_ranking_points");
     case ReportType::PenaltyCalculation: return QStringLiteral("penalty_calculation");
+    case ReportType::RunAnalysis: return QStringLiteral("run_analysis");
     }
     return QStringLiteral("unknown");
 }
@@ -113,8 +114,48 @@ QString ReportFormat::typeName(ReportType type)
     case ReportType::TimingPaper: return Tr::tr("Timing device paper");
     case ReportType::FinalRankingPoints: return Tr::tr("Final ranking (points)");
     case ReportType::PenaltyCalculation: return Tr::tr("Penalty calculation");
+    case ReportType::RunAnalysis: return Tr::tr("Run Analysis");
     }
     return QString();
+}
+
+static bool isSectorField(int field)
+{
+    using namespace ReportField;
+    return (field > Sector && field <= Sector + kMaxSectors) || (field > SectorRank && field <= SectorRank + kMaxSectors)
+        || (field > SectorTimeRank && field <= SectorTimeRank + kMaxSectors);
+}
+
+ReportFormat ReportFormat::withSectors(const ReportFormat& f, int sectors)
+{
+    using namespace ReportField;
+    sectors = qBound(1, sectors, kMaxSectors);
+    ReportFormat out = f;
+    QList<ReportColumn> cols;
+    int at = -1;
+    for (const auto& c : f.fields) {
+        if (isSectorField(c.field)) {
+            if (at < 0)
+                at = cols.size();
+            continue;
+        }
+        cols << c;
+    }
+    // without sector columns: before the time
+    if (at < 0) {
+        at = cols.size();
+        for (int i = 0; i < cols.size(); ++i)
+            if (cols.at(i).field == Time) {
+                at = i;
+                break;
+            }
+    }
+    for (int k = 1; k <= sectors; ++k) {
+        cols.insert(at++, ReportColumn{ Sector + k, 2, 10, 0, false, Tr::tr("Sector %1").arg(k) });
+        cols.insert(at++, ReportColumn{ SectorRank + k, 2, 5, 0, false, Tr::tr("Rank") });
+    }
+    out.fields = cols;
+    return out;
 }
 
 bool ReportFormat::hasSecondLines() const
@@ -219,6 +260,13 @@ ReportFormat ReportFormat::defaults(ReportType type, int run)
         f.printHeader = true;
         f.fields = { rank, bib, code, name, year, nation, { Time, 2, 10 }, { Gap, 2, 10 } };
         break;
+    case ReportType::RunAnalysis:
+        f.title = Tr::tr("Analysis of run %1");
+        f.printHeader = true;
+        f.fields = { { Rank, 1, 4 }, { CompField::Bib, 1, 4 }, { CompField::Code, 2, 9 }, { CompField::Name, 0, 22 },
+                     { CompField::Year, 0, 5 }, { CompField::Nation, 0, 5 }, { Time, 2, 9 }, { Gap, 2, 8 } };
+        f = withSectors(f, kMaxSectors);
+        break;
     case ReportType::RankingAfterRun:
         f.title = Tr::tr("Ranking after run %1");
         f.printHeader = true;
@@ -278,6 +326,12 @@ QString reportFieldLabel(int field, ReportType type, int run)
         return Tr::tr("(Rank)");
     if (field > Inter && field <= Inter + kMaxInter)
         return Tr::tr("Inter %1").arg(field - Inter);
+    if (field > Sector && field <= Sector + kMaxSectors)
+        return Tr::tr("Sector %1 time").arg(field - Sector);
+    if (field > SectorRank && field <= SectorRank + kMaxSectors)
+        return Tr::tr("Sector %1 (rank)").arg(field - SectorRank);
+    if (field > SectorTimeRank && field <= SectorTimeRank + kMaxSectors)
+        return Tr::tr("Sector %1 time (rank)").arg(field - SectorTimeRank);
     switch (field) {
     case Rank:
         return (type == ReportType::StartList) ? Tr::tr("Order") : Tr::tr("Rank");
@@ -353,6 +407,20 @@ QList<ReportFieldDef> availableReportFields(ReportType type, int runCount, int i
         add(Points, 2, 10);
         for (int i = 1; i <= interCount; ++i)
             add(Inter + i, 2, 12);
+        add(Reason, 0, 12);
+        break;
+    case ReportType::RunAnalysis:
+        add(Time, 2, 9);
+        add(Gap, 2, 8);
+        add(Penalty, 2, 8);
+        add(Points, 2, 10);
+        for (int i = 1; i <= interCount; ++i)
+            add(Inter + i, 2, 12);
+        for (int k = 1; k <= qMin(interCount + 1, kMaxSectors); ++k) {
+            add(Sector + k, 2, 10);
+            add(SectorRank + k, 2, 5);
+            add(SectorTimeRank + k, 2, 12);
+        }
         add(Reason, 0, 12);
         break;
     case ReportType::PenaltyCalculation:

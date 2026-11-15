@@ -31,6 +31,8 @@ public:
     void close() override;
     bool isOpen() const override;
     QString description() const override;
+    bool supportsDownload() const override { return true; }
+    void requestDownload(int run) override; // "#DL nn"
 
     const TimingDeviceConfig& config() const { return m_cfg; }
 
@@ -44,6 +46,8 @@ protected:
 
     TimingDeviceConfig m_cfg;
     bool m_downloading = false;
+    int m_downloadRun = 0;
+    int m_downloadTimes = 0;
 
 private:
     void onReadyRead();

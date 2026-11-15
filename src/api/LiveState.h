@@ -72,7 +72,9 @@ private:
     };
     void computeRanks(const Event& ev);
     QJsonObject rankJson(const QHash<int, Rank>& ranks, int bib, qint64 penaltyMs, bool withPenalty, Precision p) const;
-    QJsonArray interJson(const Competitor& c, int interCount, Precision p) const;
+    QJsonArray interJson(int bib, const Competitor& c, int interCount, Precision p) const;
+    // total before the run + the shown intermediate time, kNoTime when the run has no total
+    qint64 interTotal(int bib, qint64 shownInterMs) const;
 
     int m_run = 0;
     QHash<int, Competitor> m_state;
@@ -80,4 +82,11 @@ private:
     QHash<int, Rank> m_totalRank;  // final ranking after the run
     QHash<int, Rank> m_prevRank;   // final ranking before the run (run 2+)
     std::array<QVector<qint64>, kMaxInter> m_interTimes; // sorted shown intermediate times of the run
+    // the same in each output group, and the output groups of each bib
+    QVector<std::array<QVector<qint64>, kMaxInter>> m_groupInterTimes;
+    // totals at the intermediates (run 2+ of a total-of-runs race), sorted, also by group
+    bool m_withTotal = false;
+    std::array<QVector<qint64>, kMaxInter> m_interTotals;
+    QVector<std::array<QVector<qint64>, kMaxInter>> m_groupInterTotals;
+    QHash<int, QVector<int>> m_groupsOf;
 };

@@ -37,6 +37,7 @@
 #include <QTextStream>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <cmath>
 
 ReportDialog::ReportDialog(Event* ev, ReportType type, int run, QWidget* parent)
     : QDialog(parent)
@@ -49,7 +50,8 @@ ReportDialog::ReportDialog(Event* ev, ReportType type, int run, QWidget* parent)
     auto* left = new QVBoxLayout;
     auto* doc = new QGroupBox(tr("Document Format"), this);
     auto* dl = new QGridLayout(doc);
-    const bool perRun = type == ReportType::StartList || type == ReportType::RunRanking || type == ReportType::RankingAfterRun
+    const bool perRun = type == ReportType::StartList || type == ReportType::RunRanking || type == ReportType::RunAnalysis
+        || type == ReportType::RankingAfterRun
         || type == ReportType::TimeRecords || type == ReportType::TimeRecordsByBib || type == ReportType::TimingPaper;
     int row = 0;
     if (perRun) {
@@ -63,6 +65,7 @@ ReportDialog::ReportDialog(Event* ev, ReportType type, int run, QWidget* parent)
     }
     m_title = new QPlainTextEdit(doc);
     m_title->setMaximumHeight(46);
+    UiHelpers::formTextEdit(m_title);
     dl->addWidget(new QLabel(tr("Title :"), doc), row, 0, Qt::AlignTop);
     dl->addWidget(m_title, row, 1, 1, 3);
     ++row;
@@ -123,11 +126,22 @@ ReportDialog::ReportDialog(Event* ev, ReportType type, int run, QWidget* parent)
     m_tableWidth->setRange(30, 100);
     m_tableWidth->setSuffix(QStringLiteral(" %"));
     m_tableWidth->setToolTip(tr("Width of the table in % of the printable width of the page, the table is centred"));
+    auto* fitRow = new QHBoxLayout;
+    auto* fitBtn = UiHelpers::button(QStringLiteral("calculator"), tr("Fit widths"), doc);
+    fitBtn->setToolTip(tr("Sets the Width of each column to its longest text in the list, "
+                          "the rest of the table width goes to the widest left aligned column"));
+    m_fitInfo = new QLabel(doc);
+    m_fitInfo->setWordWrap(true); // the names of the cut columns may need a second line
+    fitRow->addWidget(fitBtn);
+    fitRow->addWidget(m_fitInfo, 1);
+    dl->addLayout(fitRow, row, 0, 1, 2);
+    connect(fitBtn, &QPushButton::clicked, this, &ReportDialog::fitWidths);
     dl->addWidget(new QLabel(tr("Table width :"), doc), row, 2, Qt::AlignRight);
     dl->addWidget(m_tableWidth, row, 3);
     ++row;
     m_notes = new QPlainTextEdit(doc);
     m_notes->setMaximumHeight(60);
+    UiHelpers::formTextEdit(m_notes);
     dl->addWidget(new QLabel(tr("Notes"), doc), row, 0, Qt::AlignTop);
     dl->addWidget(m_notes, row, 1, 1, 3);
     ++row;
@@ -148,7 +162,7 @@ ReportDialog::ReportDialog(Event* ev, ReportType type, int run, QWidget* parent)
     auto* ol = new QVBoxLayout(options);
     m_notClassified = new QCheckBox(tr("Print those not classified"), options);
     ol->addWidget(m_notClassified);
-    m_notClassified->setVisible(type == ReportType::RunRanking || type == ReportType::RankingAfterRun
+    m_notClassified->setVisible(type == ReportType::RunRanking || type == ReportType::RunAnalysis || type == ReportType::RankingAfterRun
                                 || type == ReportType::FinalRanking || type == ReportType::FinalRankingPoints);
     auto* groupsRow = new QHBoxLayout;
     m_byGroups = new QCheckBox(options);
@@ -227,6 +241,14 @@ ReportDialog::ReportDialog(Event* ev, ReportType type, int run, QWidget* parent)
             }
             updateInfo();
         });
+    // the columns against the table width follow every change of what is measured
+    connect(m_tableWidth, &QSpinBox::valueChanged, this, &ReportDialog::updateInfo);
+    connect(m_columns, &QSpinBox::valueChanged, this, &ReportDialog::updateInfo);
+    connect(m_landscape, &QCheckBox::toggled, this, &ReportDialog::updateInfo);
+    connect(m_fields, &QTableWidget::itemChanged, this, [this](QTableWidgetItem* it) {
+        if (it->column() == 4 || it->column() == 5)
+            updateInfo();
+    });
     connect(new QShortcut(QKeySequence(Qt::Key_F1), this), &QShortcut::activated, this, &ReportDialog::preview);
     connect(new QShortcut(QKeySequence(Qt::Key_F2), this), &QShortcut::activated, this, &ReportDialog::print);
 
@@ -273,6 +295,9 @@ void ReportDialog::loadStored()
         }
         f.fields = cols;
     }
+    // run analysis: the sectors of the event (intermediates + 1)
+    if (stored.isEmpty() && m_type == ReportType::RunAnalysis)
+        f = ReportFormat::withSectors(f, m_ev->interCount() + 1);
     setFormat(f);
 }
 
@@ -326,6 +351,7 @@ void ReportDialog::addFieldRow(const ReportColumn& c, int at)
     auto* w = new QSpinBox(m_fields);
     w->setRange(1, 99);
     w->setValue(c.width);
+    connect(w, &QSpinBox::valueChanged, this, &ReportDialog::updateInfo);
     m_fields->setCellWidget(r, 3, w);
     auto* bold = new QTableWidgetItem;
     bold->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable);
@@ -348,6 +374,7 @@ ReportColumn ReportDialog::fieldRow(int r) const
 
 void ReportDialog::setFormat(const ReportFormat& f)
 {
+    m_loading = true;
     m_title->setPlainText(f.title);
     m_printHeader->setChecked(f.printHeader);
     m_columns->setValue(f.columns);
@@ -362,6 +389,7 @@ void ReportDialog::setFormat(const ReportFormat& f)
     m_fields->setRowCount(0);
     for (const auto& c : f.fields)
         addFieldRow(c);
+    m_loading = false;
     updateInfo();
 }
 
@@ -423,8 +451,99 @@ void ReportDialog::moveField(int delta)
 
 void ReportDialog::updateInfo()
 {
+    if (m_loading)
+        return;
     const ReportDocument doc = ReportBuilder::build(*m_ev, format(), run());
     m_info->setText(doc.infoText);
+    updateFitInfo(doc);
+}
+
+// The columns against the table width as printed: red when a text is cut ("...") or the
+// printing narrows all the columns, orange with free space on the right, green otherwise.
+// With Auto adjust the columns always fill the table, only the cut texts matter.
+void ReportDialog::updateFitInfo(const ReportDocument& doc)
+{
+    if (doc.referee || doc.format.fields.isEmpty()) {
+        m_fitInfo->clear();
+        m_fitInfo->setToolTip(QString());
+        return;
+    }
+    const ReportRenderer::TableFit fit = ReportRenderer::tableFit(*m_ev, doc);
+    QStringList cut;
+    for (int i : fit.cutColumns) {
+        QString name = doc.columnLabels.value(i).section(QLatin1Char('\n'), 0, 0).trimmed();
+        if (name.isEmpty())
+            name = static_cast<QComboBox*>(m_fields->cellWidget(i, 0))->currentText();
+        cut << name;
+    }
+    const QString cutText = cut.size() > 3 ? QStringList(cut.mid(0, 3)).join(QStringLiteral(", ")) + QStringLiteral(", ...")
+                                           : cut.join(QStringLiteral(", "));
+    const QString red = QStringLiteral("#c62828");
+    QString color = QStringLiteral("#2e7d32");
+    QString text;
+    QString tip = fit.autoAdjust
+        ? tr("Auto adjust is on (Printing parameters): the Width values share the table width, "
+             "the table is always filled.")
+        : tr("Auto adjust is off (Printing parameters): the Width values are characters, "
+             "the columns are narrowed together when they are wider than the table.");
+    if (fit.autoAdjust) {
+        if (!fit.measured) {
+            color = QStringLiteral("#707070");
+            text = tr("Auto adjust: the columns fill the table width");
+        } else if (!cut.isEmpty()) {
+            color = red;
+            text = tr("Texts cut in: %1").arg(cutText);
+        } else {
+            text = tr("Auto adjust: all texts fit");
+        }
+    } else {
+        const int pct = fit.tableMm > 0 ? int(std::lround(fit.columnsMm * 100.0 / fit.tableMm)) : 0;
+        text = tr("Columns: %1 % of the table width").arg(pct);
+        if (!cut.isEmpty()) {
+            color = red;
+            text += tr(" - texts cut in: %1").arg(cutText);
+        } else if (pct > 100) {
+            color = red;
+            text += tr(" - narrowed");
+        } else if (pct < 95) {
+            color = QStringLiteral("#e65100");
+            text += tr(" - %1 % free").arg(100 - pct);
+        }
+    }
+    if (!cut.isEmpty())
+        tip += QLatin1Char('\n') + tr("Texts cut (\"...\") in: %1").arg(cut.join(QStringLiteral(", ")));
+    m_fitInfo->setStyleSheet(QStringLiteral("color: %1; font-weight: bold;").arg(color));
+    m_fitInfo->setText(text);
+    m_fitInfo->setToolTip(tip);
+}
+
+void ReportDialog::fitWidths()
+{
+    const ReportDocument doc = ReportBuilder::build(*m_ev, format(), run());
+    if (doc.referee || doc.format.fields.isEmpty())
+        return;
+    const ReportRenderer::TableFit fit = ReportRenderer::tableFit(*m_ev, doc);
+    if (!fit.measured) {
+        QMessageBox::information(this, windowTitle(), tr("The list is empty, there is nothing to measure the columns with."));
+        return;
+    }
+    QVector<int> widths = fit.fitWidths;
+    // the rest of the table width to the widest left aligned column (usually the name)
+    int sum = 0;
+    for (int w : widths)
+        sum += w;
+    const int capacity = fit.unitMm > 0 ? int(std::floor(fit.tableMm / fit.unitMm)) : sum;
+    int stretch = -1;
+    for (int i = 0; i < widths.size(); ++i)
+        if (doc.format.fields.at(i).align == 0 && (stretch < 0 || widths.at(i) > widths.at(stretch)))
+            stretch = i;
+    if (stretch >= 0 && capacity > sum)
+        widths[stretch] = qMin(99, widths.at(stretch) + capacity - sum);
+    m_loading = true;
+    for (int r = 0; r < m_fields->rowCount() && r < widths.size(); ++r)
+        static_cast<QSpinBox*>(m_fields->cellWidget(r, 3))->setValue(widths.at(r));
+    m_loading = false;
+    updateInfo();
 }
 
 void ReportDialog::save()
@@ -512,7 +631,10 @@ void ReportDialog::loadFromEvent()
 
 void ReportDialog::resetDefaults()
 {
-    setFormat(ReportFormat::defaults(m_type, run()));
+    ReportFormat f = ReportFormat::defaults(m_type, run());
+    if (m_type == ReportType::RunAnalysis)
+        f = ReportFormat::withSectors(f, m_ev->interCount() + 1);
+    setFormat(f);
 }
 
 void ReportDialog::done(int r)

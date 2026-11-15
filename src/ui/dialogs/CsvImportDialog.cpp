@@ -202,7 +202,8 @@ void CsvImportDialog::accept()
     AppSettings::setValue(settingsKey() + QStringLiteral("/mode"), m_mode->currentIndex());
     QVector<Competitor> list = CsvImporter::toCompetitors(m_table, map, m_header->isChecked() ? 1 : 0);
     for (auto& c : list) {
-        c.lastName = c.lastName.toUpper();
+        if (m_ev->params().fields.upperLastName)
+            c.lastName = c.lastName.toUpper();
         if (c.category.isEmpty())
             c.category = m_ev->categories().categoryFor(c.gender, c.year);
     }
@@ -245,5 +246,6 @@ void CsvImportDialog::accept()
         break;
     }
     QMessageBox::information(this, windowTitle(), tr("%1 competitor(s) added, %2 updated.").arg(added).arg(updated));
+    UiHelpers::warnDuplicateBibs(this, *m_ev);
     QDialog::accept();
 }

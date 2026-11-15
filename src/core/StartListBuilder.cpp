@@ -57,4 +57,21 @@ QVector<StartEntry> nextRun(const Event& ev, int run, int reverseCount)
     return out;
 }
 
+QVector<StartEntry> copyRun(const Event& ev, int from, bool skipOut)
+{
+    QVector<StartEntry> out;
+    const RunData& run = ev.run(from);
+    for (const auto& s : run.startList) {
+        if (s.bib <= 0)
+            continue;
+        const ResultStatus st = run.info(s.bib).status;
+        if (skipOut && (st == ResultStatus::DNS || st == ResultStatus::NPS || st == ResultStatus::DNF || st == ResultStatus::DSQ))
+            continue;
+        StartEntry e;
+        e.bib = s.bib;
+        out << e;
+    }
+    return out;
+}
+
 } // namespace StartListBuilder

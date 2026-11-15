@@ -14,6 +14,7 @@
 #include <QPushButton>
 #include <QSet>
 #include <QTableWidget>
+#include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -88,9 +89,12 @@ StartListDialog::StartListDialog(Event* ev, int run, QWidget* parent)
     menu->addAction(tr("Random draw"), this, [this] { setList(StartListBuilder::firstRun(*m_ev, StartListBuilder::FirstRunOrder::Random)); });
     auto* prevAct = menu->addAction(tr("From the ranking of the previous run..."), this, &StartListDialog::generateFromPrevious);
     prevAct->setEnabled(run > 1);
+    auto* copyAct = menu->addAction(tr("Copy the start list of the previous run..."), this, &StartListDialog::copyFromPrevious);
+    copyAct->setEnabled(run > 1);
     menu->addSeparator();
     menu->addAction(tr("Clear the start list"), this, [this] { setList({}); });
-    connect(options, &QPushButton::clicked, this, [options, menu] { menu->popup(options->mapToGlobal(QPoint(0, -menu->sizeHint().height()))); });
+    auto showOptions = [options, menu] { menu->popup(options->mapToGlobal(QPoint(0, -menu->sizeHint().height()))); };
+    connect(options, &QPushButton::clicked, this, showOptions);
 
     connect(add, &QToolButton::clicked, this, &StartListDialog::insertRow);
     connect(del, &QToolButton::clicked, this, &StartListDialog::removeRow);
@@ -105,14 +109,11 @@ StartListDialog::StartListDialog(Event* ev, int run, QWidget* parent)
             refreshNames();
     });
 
-    QVector<StartEntry> current = ev->run(run).startList;
-    if (current.isEmpty()) {
-        if (run == 1)
-            current = StartListBuilder::firstRun(*ev, StartListBuilder::FirstRunOrder::ByBib);
-        else
-            current = StartListBuilder::nextRun(*ev, run, ev->params().timing.reverseCount);
-    }
+    // No start list yet: show it empty and offer the Options right away instead of pre-filling it
+    const QVector<StartEntry> current = ev->run(run).startList;
     setList(current);
+    if (current.isEmpty())
+        QTimer::singleShot(0, this, showOptions);
     resize(640, 820);
 }
 
@@ -240,6 +241,22 @@ void StartListDialog::generateFromPrevious()
         m_ev->setParams(p);
     }
     setList(StartListBuilder::nextRun(*m_ev, m_run, n));
+}
+
+void StartListDialog::copyFromPrevious()
+{
+    const int from = m_run - 1;
+    if (m_ev->run(from).startList.isEmpty()) {
+        QMessageBox::information(this, windowTitle(), tr("%1 has no start list.").arg(m_ev->params().type.runName(from)));
+        return;
+    }
+    const auto answer = QMessageBox::question(
+        this, tr("Copy the start list of the previous run"),
+        tr("Leave out the competitors who did not finish %1 (DNS, NPS, DNF, DSQ)?").arg(m_ev->params().type.runName(from)),
+        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
+    if (answer == QMessageBox::Cancel)
+        return;
+    setList(StartListBuilder::copyRun(*m_ev, from, answer == QMessageBox::Yes));
 }
 
 void StartListDialog::accept()

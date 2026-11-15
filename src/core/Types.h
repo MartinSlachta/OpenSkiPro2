@@ -58,6 +58,7 @@ constexpr int Start = 0;
 constexpr int Finish = 100;
 }
 constexpr int kMaxInter = 3;
+constexpr int kMaxSectors = kMaxInter + 1; // start - inter 1 - ... - finish
 constexpr int kMaxRuns = 9;
 
 // Flags of a raw time record (impulse). DNS / DNF values match SkiPro.

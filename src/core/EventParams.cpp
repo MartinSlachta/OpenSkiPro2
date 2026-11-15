@@ -199,6 +199,7 @@ QVariantMap EventParams::toMap() const
     m[QStringLiteral("general.fisNation")] = general.fisNation;
     m[QStringLiteral("general.publishToken")] = general.publishToken;
     m[QStringLiteral("general.freeHeader")] = general.useFreeHeader;
+    m[QStringLiteral("general.freeHeaderText")] = general.freeHeader;
     // FIS points / penalty
     m[QStringLiteral("fis.list")] = fisPoints.list;
     for (int g = 0; g < 2; ++g) {
@@ -295,6 +296,7 @@ QVariantMap EventParams::toMap() const
     m[QStringLiteral("fields.grid")] = grid.join(QLatin1Char(','));
     if (fields.shownSet)
         m[QStringLiteral("fields.public")] = joinInts(fields.shown);
+    m[QStringLiteral("fields.upperLastName")] = fields.upperLastName;
     m[QStringLiteral("output.groups")] = outputGroupsToString(outputGroups);
     return m;
 }
@@ -369,6 +371,7 @@ void EventParams::fromMap(const QVariantMap& m)
     general.fisNation = str("general.fisNation");
     general.publishToken = str("general.publishToken");
     general.useFreeHeader = flag(QStringLiteral("general.freeHeader"), false);
+    general.freeHeader = str("general.freeHeaderText");
     fisPoints.list = str("fis.list");
     for (int g = 0; g < 2; ++g) {
         FisPointsParams& f = fisPoints.gender[size_t(g)];
@@ -476,6 +479,7 @@ void EventParams::fromMap(const QVariantMap& m)
     }
     fields.shownSet = m.contains(QStringLiteral("fields.public"));
     fields.shown = fields.shownSet ? splitInts(str("fields.public")) : QList<int>();
+    fields.upperLastName = flag(QStringLiteral("fields.upperLastName"), true);
     outputGroups = outputGroupsFromString(str("output.groups"));
 }
 

@@ -1,4 +1,5 @@
 #include "SkiProImporter.h"
+#include "report/FreeHeader.h"
 #include "core/Event.h"
 
 #include <QAtomicInt>
@@ -270,6 +271,8 @@ bool SkiProImporter::readDatabases(const QString& mainFile, const QString& runsF
     ep.general.timingBy = p.value(QStringLiteral("TIMING_BY"));
     ep.general.codex = p.value(QStringLiteral("CODEX"));
     ep.general.useFreeHeader = p.value(QStringLiteral("USE_FREE_HEADER")) == QLatin1String("1");
+    // the text of the free header (RichEdit RTF of the printing parameters)
+    ep.general.freeHeader = FreeHeader::fromRtf(e.value(QStringLiteral("RTF_HEADER"), p.value(QStringLiteral("RTF_HEADER"))));
 
     // ---- event type
     const int discipline = p.value(QStringLiteral("DISCIPLINE"), QStringLiteral("2")).toInt();

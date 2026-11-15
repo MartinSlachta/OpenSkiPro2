@@ -25,6 +25,7 @@ private:
     void search();
     void refreshNames();
     void generateFromPrevious();
+    void copyFromPrevious();
 
     Event* m_ev;
     int m_run;

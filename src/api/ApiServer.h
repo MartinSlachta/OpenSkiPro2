@@ -52,6 +52,10 @@ public:
     void attachTiming(TimingEngine* engine);
     void detachTiming();
     void setDevices(const QVector<TimingDeviceState>& devices);
+    // Off-line timing: nothing is published (no broadcast, the resources keep the content they had);
+    // unfreezing publishes the state reached in one pass, without competitor events.
+    void setFrozen(bool frozen);
+    bool isFrozen() const { return m_frozen; }
 
     // A resource ("status", "run/1/results?group=0", ...) as served, with its "rev".
     // httpStatus: 200, 404 (unknown), 503 (no event).
@@ -114,6 +118,8 @@ private:
     QString m_error;
     QString m_instance;
     QHash<QString, Cached> m_cache;
+    bool m_frozen = false;
+    QHash<QString, QPair<QJsonObject, int>> m_served; // variants (?group / ?upto) as last served, for the freeze
     QSet<QString> m_dirty;
     bool m_flushPending = false;
     QHash<QWebSocket*, Client*> m_clients;

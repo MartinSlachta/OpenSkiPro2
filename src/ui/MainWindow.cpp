@@ -24,6 +24,7 @@
 #include "dialogs/FisUpdateDialog.h"
 #include "dialogs/FoldersDialog.h"
 #include "dialogs/GeneralParametersDialog.h"
+#include "dialogs/FreeHeaderDialog.h"
 #include "dialogs/HeaderDialog.h"
 #include "dialogs/PrintingParametersDialog.h"
 #include "dialogs/ReportDialog.h"
@@ -96,7 +97,7 @@ MainWindow::MainWindow(QWidget* parent)
         const ReportType t = m_reportActions.at(i).first;
         if (t == ReportType::StartList || t == ReportType::RankingAfterRun || t == ReportType::TimeRecords)
             m_nav->addSeparator();
-        const bool indent = t == ReportType::RunRanking || t == ReportType::FinalRanking || t == ReportType::FinalRankingPoints
+        const bool indent = t == ReportType::RunRanking || t == ReportType::RunAnalysis || t == ReportType::FinalRanking || t == ReportType::FinalRankingPoints
             || t == ReportType::PenaltyCalculation;
         m_nav->addAction(m_reportActions.at(i).second, indent ? 1 : 0);
     }
@@ -124,7 +125,8 @@ MainWindow::MainWindow(QWidget* parent)
     lay->addWidget(split, 1);
     setCentralWidget(central);
 
-    connect(m_runsPage, &RunsPage::timingRequested, this, &MainWindow::openTiming);
+    connect(m_runsPage, &RunsPage::timingRequested, this, [this](int run) { openTiming(run, false); });
+    connect(m_runsPage, &RunsPage::offlineTimingRequested, this, [this](int run) { openTiming(run, true); });
     connect(m_event, &Event::paramsChanged, this, &MainWindow::updateState);
     connect(m_event, &Event::opened, this, &MainWindow::updateState);
     connect(m_event, &Event::closed, this, &MainWindow::updateState);
@@ -201,7 +203,7 @@ void MainWindow::createActions()
     }, true);
 
     const QList<ReportType> reports = { ReportType::Competitors, ReportType::CompetitorsPoints, ReportType::StartList,
-                                        ReportType::RunRanking, ReportType::RankingAfterRun, ReportType::FinalRanking,
+                                        ReportType::RunRanking, ReportType::RunAnalysis, ReportType::RankingAfterRun, ReportType::FinalRanking,
                                         ReportType::FinalRankingPoints, ReportType::PenaltyCalculation,
                                         ReportType::TimeRecords, ReportType::TimingPaper };
     for (ReportType t : reports) {
@@ -529,6 +531,16 @@ void MainWindow::editPrintingParameters()
 
 void MainWindow::editHeader()
 {
+    // free header (General Parameters): a rich text instead of the jury / technical data
+    if (m_event->params().general.useFreeHeader) {
+        FreeHeaderDialog dlg(m_event->params(), this);
+        if (dlg.exec() == QDialog::Accepted) {
+            EventParams p = m_event->params();
+            dlg.apply(p);
+            m_event->setParams(p);
+        }
+        return;
+    }
     HeaderDialog dlg(m_event->params(), this);
     if (dlg.exec() == QDialog::Accepted) {
         EventParams p = m_event->params();
@@ -685,13 +697,17 @@ void MainWindow::about()
     dlg.exec();
 }
 
-void MainWindow::openTiming(int run)
+void MainWindow::openTiming(int run, bool offline)
 {
     if (!m_event->isOpen())
         return;
     if (m_timing) {
-        if (m_timing->run() != run) {
-            QMessageBox::information(this, tr("Timing"), tr("The timing of run %1 is already open.").arg(m_timing->run()));
+        // only one timing window: on-line or off-line (SkiPro)
+        if (m_timing->run() != run || m_timing->isOffline() != offline) {
+            QMessageBox::information(this, tr("Timing"),
+                                     (m_timing->isOffline() ? tr("The Off-line timing of run %1 is already open.")
+                                                            : tr("The timing of run %1 is already open."))
+                                         .arg(m_timing->run()));
         }
         if (m_timing->isMinimized())
             m_timing->showNormal();
@@ -699,7 +715,7 @@ void MainWindow::openTiming(int run)
         m_timing->activateWindow();
         return;
     }
-    m_timing = new TimingWindow(m_event, run, nullptr);
+    m_timing = new TimingWindow(m_event, run, nullptr, offline);
     m_timing->setAttribute(Qt::WA_DeleteOnClose);
     // the event cannot be changed while timing
     m_timing->setWindowModality(Qt::ApplicationModal);
@@ -711,13 +727,19 @@ void MainWindow::openTiming(int run)
         raise();
         activateWindow();
     });
-    // the API publishes the live timing while the window is open (detached when it is destroyed)
-    m_api->attachTiming(m_timing->engine());
-    m_api->setDevices(m_timing->deviceStates());
-    connect(m_timing, &TimingWindow::devicesChanged, m_api, [this] {
-        if (m_timing)
-            m_api->setDevices(m_timing->deviceStates());
-    });
+    if (offline) {
+        // Off-line timing: nothing goes to the API until the window is closed, then one update
+        m_api->setFrozen(true);
+        connect(m_timing, &QObject::destroyed, m_api, [this] { m_api->setFrozen(false); });
+    } else {
+        // the API publishes the live timing while the window is open (detached when it is destroyed)
+        m_api->attachTiming(m_timing->engine());
+        m_api->setDevices(m_timing->deviceStates());
+        connect(m_timing, &TimingWindow::devicesChanged, m_api, [this] {
+            if (m_timing)
+                m_api->setDevices(m_timing->deviceStates());
+        });
+    }
     m_timing->setApiState(m_api->stateText());
     m_timing->showWithSavedGeometry();
     setWindowState(windowState() | Qt::WindowMinimized);

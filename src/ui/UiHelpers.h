@@ -5,9 +5,11 @@
 #include <QIcon>
 #include <QString>
 
+class Event;
 class QDialog;
 class QHBoxLayout;
 class QLabel;
+class QPlainTextEdit;
 class QPushButton;
 class QTableWidget;
 class QTableView;
@@ -29,5 +31,10 @@ QString statusText(ResultStatus s);
 QString oneLine(const QString& text); // lines joined with " / " (multi-line titles)
 QString pointName(int point);
 QString appStyleSheet();
+// Multi-line text field of a form: Tab moves to the next field instead of typing a tab,
+// maxLines > 0 keeps at most that many lines (Enter and pasted text included).
+void formTextEdit(QPlainTextEdit* edit, int maxLines = 0);
+// Warns about bibs that several competitors have (after an import): the times belong to the bib.
+void warnDuplicateBibs(QWidget* parent, const Event& ev);
 
 } // namespace UiHelpers

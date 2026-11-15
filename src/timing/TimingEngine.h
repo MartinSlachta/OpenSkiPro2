@@ -48,6 +48,7 @@ public:
 
     // -- input
     int handleImpulse(const TimingImpulse& imp);                 // returns the record id (0 = ignored)
+    int handleDownloaded(const TimingImpulse& imp);              // Off-line timing (imp.downloaded)
     int insertPassage(int point, qint64 dayTimeUs, int bib);     // passage with a given time
     int duplicateRecord(int recordId);                           // Insert a passage (F5): copy of a record
 

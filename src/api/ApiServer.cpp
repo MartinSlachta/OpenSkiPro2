@@ -388,11 +388,17 @@ QJsonObject ApiServer::resource(const QString& name, int* httpStatus)
     } else {
         QJsonObject content;
         const auto it = m_cache.constFind(n.base);
-        if (n.group < 0 && n.upto == 0 && it != m_cache.constEnd() && !m_dirty.contains(n.base)) {
+        const bool variant = n.group >= 0 || n.upto != 0;
+        if (!variant && it != m_cache.constEnd() && (!m_dirty.contains(n.base) || m_frozen)) {
             content = it->content;
             status = it->httpStatus;
+        } else if (variant && m_frozen && m_served.contains(name)) {
+            content = m_served.value(name).first;
+            status = m_served.value(name).second;
         } else {
             content = build(n, &status);
+            if (variant && !m_frozen)
+                m_served.insert(name, qMakePair(content, status));
         }
         out = status == 200 ? withRev(content, n.base) : content;
     }
@@ -441,9 +447,28 @@ void ApiServer::scheduleFlush()
     QTimer::singleShot(0, this, &ApiServer::flush);
 }
 
+void ApiServer::setFrozen(bool frozen)
+{
+    if (frozen == m_frozen)
+        return;
+    m_frozen = frozen;
+    if (frozen)
+        return;
+    // the competitors processed while frozen are not announced one by one
+    if (m_ev->isOpen())
+        for (int r : std::as_const(m_dirtyRuns))
+            if (r >= 1 && r <= m_ev->runCount() && r <= kMaxRuns)
+                m_runStates[size_t(r - 1)].update(*m_ev, r, true);
+    m_dirtyRuns.clear();
+    m_served.clear();
+    markAllDirty();
+}
+
 void ApiServer::flush()
 {
     m_flushPending = false;
+    if (m_frozen)
+        return; // the changes stay pending until unfrozen
     if (m_dirty.isEmpty())
         return;
     const QSet<QString> dirty = m_dirty;

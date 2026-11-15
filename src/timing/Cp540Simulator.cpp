@@ -7,6 +7,8 @@
 #include <QTime>
 #include <QTimer>
 
+#include <algorithm>
+
 Cp540Simulator::Cp540Simulator(int slot, const TimingDeviceConfig& cfg, QObject* parent)
     : Cp540Device(slot, cfg, parent)
 {
@@ -124,6 +126,30 @@ void Cp540Simulator::autoTick()
 
 void Cp540Simulator::sendCommand(const QByteArray& data)
 {
+    // download of a run: the whole memory as answers between DS and DE
+    static const QRegularExpression dl(QStringLiteral("^#DL\\s*(\\d+)"));
+    const auto d = dl.match(QString::fromLatin1(data));
+    if (d.hasMatch()) {
+        const int run = d.captured(1).toInt();
+        QList<QByteArray> lines;
+        for (auto it = m_history.cbegin(); it != m_history.cend(); ++it) {
+            QByteArray rec = it.value();
+            rec[0] = 'A'; // TN -> AN
+            lines << rec;
+        }
+        // in the order of the times (HH:MM:SS.FFFFF from column 16)
+        std::sort(lines.begin(), lines.end(), [](const QByteArray& a, const QByteArray& b) { return a.mid(16) < b.mid(16); });
+        QList<QByteArray> frames;
+        frames << QStringLiteral("DS %1 _   SIMULATOR").arg(run, 2, 10, QLatin1Char('0')).toLatin1();
+        frames << lines;
+        frames << QStringLiteral("DE %1").arg(run, 2, 10, QLatin1Char('0')).toLatin1();
+        QTimer::singleShot(50, this, [this, frames] {
+            for (const QByteArray& f : frames)
+                processLine(Cp540Protocol::frame(f, true).trimmed());
+        });
+        return;
+    }
+
     // answer recall requests from the history
     static const QRegularExpression re(QStringLiteral("^#RT\\s*(\\d+)\\s+(\\d+)"));
     const auto m = re.match(QString::fromLatin1(data));

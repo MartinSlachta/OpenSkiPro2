@@ -27,6 +27,7 @@ struct GeneralParams {
     QString fisNation;   // nation of the codex, empty: the nation above
     QString publishToken; // token of OpenSkiPro Publish for this race (read by OpenSkiPro Connect through the API)
     bool useFreeHeader = false;
+    QString freeHeader;  // the free header (rich text, Qt HTML) printed instead of the jury block
 
     QString codexNation() const; // fisNation or nation, upper case
     // "123" -> "0123"; anything else than 1..4 digits stays as it is
@@ -150,6 +151,7 @@ struct CompetitorFieldConfig {
     QList<QPair<int, int>> grid; // (field id, width px) shown in the competitors grid
     QList<int> shown;            // public fields (shown to the spectators), most important first
     bool shownSet = false;       // false: never chosen, publicFields() derives them from the grid
+    bool upperLastName = true;   // last names typed or imported (CSV) are put in capitals
     QString label(int fieldId) const;
     bool isActive(int fieldId) const { return active.contains(fieldId); }
     // Fields the outputs for the spectators show (API event.fields): Name always, then the

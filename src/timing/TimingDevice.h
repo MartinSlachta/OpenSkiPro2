@@ -24,6 +24,7 @@ struct TimingImpulse {
     int seq = 0;          // device sequential number
     qint64 dayTimeUs = -1;
     int day = -1;         // device day number (days since 01.01.2000), -1 unknown
+    bool downloaded = false; // read from the memory of the device (Off-line timing, CP540 #DL)
 };
 
 Q_DECLARE_METATYPE(TimingImpulse)
@@ -86,12 +87,24 @@ public:
     virtual bool isOpen() const = 0;
     virtual QString description() const = 0;
 
+    // Off-line timing: the live impulses are ignored, the times come from the memory of the device.
+    virtual bool supportsDownload() const { return false; }
+    virtual void setOffline(bool offline) { m_offline = offline; }
+    bool isOffline() const { return m_offline; }
+    // Asks the device for the times of its run (session) `run`; impulses with `downloaded` set follow,
+    // then downloadFinished().
+    virtual void requestDownload(int run) { Q_UNUSED(run); }
+
 Q_SIGNALS:
     void impulse(const TimingImpulse& imp);
     void rawLine(const QString& line, bool valid); // everything received (timing device paper)
     void statusChanged(bool connected, const QString& text);
     void deviceMessage(const QString& text);    // OP / CL / errors ...
+    void downloadStarted(int run);
+    void downloadFinished(int run, int times);  // times = number of times received
+    void liveImpulseIgnored();                  // a live impulse arrived in Off-line timing
 
 protected:
     int m_slot;
+    bool m_offline = false;
 };

@@ -75,14 +75,17 @@ QIcon mustFinishMark(qint64 diffMs)
 }
 }
 
-TimingWindow::TimingWindow(Event* ev, int run, QWidget* parent)
+TimingWindow::TimingWindow(Event* ev, int run, QWidget* parent, bool offline)
     : QMainWindow(parent)
     , m_ev(ev)
     , m_run(run)
+    , m_offline(offline)
     , m_engine(new TimingEngine(ev, this))
 {
     m_engine->setRun(run);
-    setWindowTitle(tr("Timing - %1 / %2").arg(ev->params().type.runName(run)).arg(ev->runCount()));
+    setWindowTitle((offline ? tr("Timing Off-line - %1 / %2") : tr("Timing - %1 / %2"))
+                       .arg(ev->params().type.runName(run))
+                       .arg(ev->runCount()));
     setWindowIcon(UiHelpers::icon(QStringLiteral("stopwatch")));
     buildActions();
     buildUi();
@@ -112,6 +115,10 @@ TimingWindow::TimingWindow(Event* ev, int run, QWidget* parent)
     connect(m_engine, &TimingEngine::playSound, this, [](const QString& f) { SoundPlayer::play(f); });
     connect(m_engine, &TimingEngine::unassignedRecord, this, &TimingWindow::onUnassigned);
     connect(m_engine, &TimingEngine::followChanged, this, &TimingWindow::scheduleRefresh);
+    connect(m_engine, &TimingEngine::recordAdded, this, [this](int r, int) {
+        if (r == m_run && m_offSlot > 0)
+            ++m_offAdded;
+    });
 
     auto* clock = new QTimer(this);
     connect(clock, &QTimer::timeout, this, [this] {
@@ -244,6 +251,7 @@ void TimingWindow::buildActions()
     edit->addSeparator();
     act(edit, tr("Start List"), QStringLiteral("printer"), QKeySequence(), [this] { openReport(int(ReportType::StartList)); });
     act(edit, tr("Run Ranking"), QStringLiteral("printer"), QKeySequence(), [this] { openReport(int(ReportType::RunRanking)); });
+    act(edit, tr("Run Analysis"), QStringLiteral("printer"), QKeySequence(), [this] { openReport(int(ReportType::RunAnalysis)); });
     edit->addSeparator();
     act(edit, tr("Event Ranking"), QStringLiteral("printer"), QKeySequence(), [this] { openReport(int(ReportType::RankingAfterRun)); });
 
@@ -770,6 +778,8 @@ void TimingWindow::buildUi()
     auto* central = new QWidget(this);
     auto* cl = new QVBoxLayout(central);
     cl->setContentsMargins(0, 0, 0, 0);
+    if (m_offline)
+        cl->addWidget(makeOfflinePanel(central));
     cl->addWidget(split, 1);
 
     // simulator bar
@@ -854,6 +864,24 @@ void TimingWindow::reloadDeviceConfig()
         if (!dev)
             continue;
         m_devices[size_t(s)] = dev;
+        dev->setOffline(m_offline);
+        if (m_offline) {
+            connect(dev, &TimingDevice::downloadStarted, this, [this, s](int deviceRun) {
+                statusBar()->showMessage(tr("Timing device %1: download of the run %2...").arg(s).arg(deviceRun));
+                if (m_offTimeout && m_offSlot == s)
+                    m_offTimeout->start(); // the data is coming
+            });
+            connect(dev, &TimingDevice::downloadFinished, this, [this, s](int deviceRun, int times) {
+                if (m_offSlot == s)
+                    offlineDownloadDone(deviceRun, times, false);
+            });
+            connect(dev, &TimingDevice::liveImpulseIgnored, this, [this, s] {
+                statusBar()->showMessage(tr("Timing device %1: live impulse ignored in the Off-line timing. "
+                                            "Use the Timing (on-line) to record the live impulses.")
+                                             .arg(s),
+                                         15000);
+            });
+        }
         connect(dev, &TimingDevice::rawLine, this, [this, s](const QString& line, bool valid) {
             if (line.trimmed().isEmpty())
                 return;
@@ -866,7 +894,7 @@ void TimingWindow::reloadDeviceConfig()
         });
         connect(dev, &TimingDevice::impulse, m_engine, &TimingEngine::handleImpulse);
         connect(dev, &TimingDevice::impulse, this, [this](const TimingImpulse& imp) {
-            if (imp.type != TimingImpulse::Type::New || imp.dayTimeUs < 0)
+            if (imp.type != TimingImpulse::Type::New || imp.dayTimeUs < 0 || imp.downloaded)
                 return;
             // the clock shows the time of the timing device, like SkiPro
             qint64 offset = imp.dayTimeUs - TimingEngine::currentDayTimeUs();
@@ -882,6 +910,7 @@ void TimingWindow::reloadDeviceConfig()
     }
     m_simBar->setVisible(anySim);
     updateDeviceIndicators();
+    updateOfflinePanel();
 }
 
 void TimingWindow::connectDevice(int slot, bool on)
@@ -923,6 +952,7 @@ void TimingWindow::updateDeviceIndicators()
         b->setToolTip(dev ? dev->description() : tr("Not configured"));
         b->setEnabled(dev != nullptr);
     }
+    updateOfflinePanel();
     Q_EMIT devicesChanged();
 }
 
@@ -950,7 +980,159 @@ void TimingWindow::setApiState(const QString& text)
         m_apiState = new QLabel(this);
         statusBar()->addPermanentWidget(m_apiState);
     }
-    m_apiState->setText(text);
+    m_apiState->setText(m_offline ? tr("%1 - paused until the Off-line timing is closed").arg(text) : text);
+}
+
+// ---- Off-line timing ----------------------------------------------------------------------
+// SkiPro: panel "Mode off-line" of the timing window (Type of data / Run number / Channel /
+// Delete Existing Records / Download). The point of every time is given by the channel mapping of
+// the device, so only the device, its run number (session) and the two buttons are kept.
+
+QWidget* TimingWindow::makeOfflinePanel(QWidget* parent)
+{
+    auto* panel = new QWidget(parent);
+    panel->setObjectName(QStringLiteral("offlinePanel"));
+    auto* v = new QVBoxLayout(panel);
+    v->setContentsMargins(2, 2, 2, 0);
+    v->setSpacing(2);
+    v->addWidget(UiHelpers::titleBar(tr("Off-Line Mode"), panel));
+    auto* row = new QHBoxLayout;
+    row->setContentsMargins(6, 2, 6, 4);
+    row->addWidget(new QLabel(tr("Timing Device:"), panel));
+    m_offDevice = new QComboBox(panel);
+    m_offDevice->setMinimumWidth(220);
+    row->addWidget(m_offDevice);
+    row->addSpacing(16);
+    row->addWidget(new QLabel(tr("Timing Device Run Number (or Session Number):"), panel));
+    m_offRun = new QSpinBox(panel);
+    m_offRun->setRange(1, 99);
+    m_offRun->setValue(1);
+    m_offRun->setToolTip(tr("Number of the run (session) in the memory of the timing device.\n"
+                            "It depends on the clearing of the memory of the device."));
+    row->addWidget(m_offRun);
+    row->addSpacing(16);
+    m_offDelete = new QPushButton(tr("Delete Existing Records"), panel);
+    m_offDelete->setToolTip(tr("Deletes all the timing information of this run (times, statuses, results)"));
+    row->addWidget(m_offDelete);
+    m_offDownload = new QPushButton(UiHelpers::icon(QStringLiteral("connect")), tr("Download"), panel);
+    row->addWidget(m_offDownload);
+    m_offLamp = new QLabel(panel);
+    row->addWidget(m_offLamp);
+    row->addStretch();
+    v->addLayout(row);
+
+    m_offTimeout = new QTimer(this);
+    m_offTimeout->setSingleShot(true);
+    m_offTimeout->setInterval(30000);
+    connect(m_offTimeout, &QTimer::timeout, this, [this] {
+        if (m_offSlot > 0)
+            offlineDownloadDone(m_offRun->value(), -1, true);
+    });
+    connect(m_offDelete, &QPushButton::clicked, this, &TimingWindow::offlineDelete);
+    connect(m_offDownload, &QPushButton::clicked, this, &TimingWindow::offlineDownload);
+    connect(m_offDevice, &QComboBox::currentIndexChanged, this, &TimingWindow::updateOfflinePanel);
+    return panel;
+}
+
+void TimingWindow::updateOfflinePanel()
+{
+    if (!m_offline || !m_offDevice)
+        return;
+    // devices able to download, the first one by default
+    const int current = m_offDevice->currentData().toInt();
+    QList<int> slotList;
+    for (int s = 1; s <= 2; ++s)
+        if (m_devices[size_t(s)] && m_devices[size_t(s)]->supportsDownload())
+            slotList << s;
+    bool same = slotList.size() == m_offDevice->count();
+    for (int i = 0; same && i < slotList.size(); ++i)
+        same = m_offDevice->itemData(i).toInt() == slotList.at(i);
+    if (!same) {
+        const QSignalBlocker block(m_offDevice);
+        m_offDevice->clear();
+        for (int s : slotList)
+            m_offDevice->addItem(tr("Timing Device %1 - %2").arg(s).arg(m_devices[size_t(s)]->description()), s);
+        const int idx = m_offDevice->findData(current);
+        m_offDevice->setCurrentIndex(idx >= 0 ? idx : 0);
+    }
+    const int slot = m_offDevice->currentData().toInt();
+    TimingDevice* dev = slot > 0 ? m_devices[size_t(slot)].data() : nullptr;
+    const bool ok = dev && dev->isOpen();
+    m_offLamp->setPixmap(UiHelpers::icon(ok ? QStringLiteral("ball_green") : QStringLiteral("ball_red")).pixmap(16, 16));
+    m_offLamp->setToolTip(ok ? tr("Connected") : tr("Not connected"));
+    const bool busy = m_offSlot > 0;
+    m_offDevice->setEnabled(!busy);
+    m_offRun->setEnabled(!busy);
+    m_offDelete->setEnabled(!busy);
+    m_offDownload->setEnabled(!busy && ok);
+    m_offDownload->setToolTip(slotList.isEmpty()
+                                  ? tr("No timing device able to download is configured (Local configuration > Timing Device)")
+                                  : tr("Downloads the times of the run from the memory of the timing device"));
+}
+
+void TimingWindow::offlineDelete()
+{
+    const RunData& d = m_engine->data();
+    if (d.records.isEmpty() && d.infos.isEmpty() && d.paper.isEmpty()) {
+        statusBar()->showMessage(tr("There is no timing information in this run."), 10000);
+        return;
+    }
+    if (QMessageBox::warning(this, tr("Delete Existing Records"),
+                             tr("Delete all the timing information of %1 (times, statuses DNS / NPS / DNF / DSQ, penalties, "
+                                "results and the timing device paper)?\n\nThis cannot be undone.")
+                                 .arg(m_ev->params().type.runName(m_run)),
+                             QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
+        != QMessageBox::Yes)
+        return;
+    if (!m_ev->clearRun(m_run, false, true)) {
+        QMessageBox::warning(this, tr("Delete Existing Records"), tr("The timing information could not be deleted."));
+        return;
+    }
+    m_engine->rebuildFollow();
+    statusBar()->showMessage(tr("All the timing information of %1 deleted.").arg(m_ev->params().type.runName(m_run)), 10000);
+    scheduleRefresh();
+}
+
+void TimingWindow::offlineDownload()
+{
+    const int slot = m_offDevice ? m_offDevice->currentData().toInt() : 0;
+    TimingDevice* dev = slot > 0 ? m_devices[size_t(slot)].data() : nullptr;
+    if (!dev || !dev->isOpen()) {
+        statusBar()->showMessage(tr("The timing device is not connected."), 10000);
+        return;
+    }
+    m_offSlot = slot;
+    m_offAdded = 0;
+    m_offTimeout->start();
+    updateOfflinePanel();
+    statusBar()->showMessage(tr("Timing device %1: download of the run %2 requested...").arg(slot).arg(m_offRun->value()));
+    dev->requestDownload(m_offRun->value());
+}
+
+void TimingWindow::offlineDownloadDone(int deviceRun, int times, bool timeout)
+{
+    m_offTimeout->stop();
+    const int slot = m_offSlot;
+    m_offSlot = 0;
+    updateOfflinePanel();
+    m_engine->rebuildFollow();
+    scheduleRefresh();
+    if (timeout) {
+        QMessageBox::warning(this, tr("Download"),
+                             tr("No answer from the timing device %1 to the download of the run %2.\n\n"
+                                "Check the connection and the run number (session) on the timing device.")
+                                 .arg(slot)
+                                 .arg(deviceRun));
+        return;
+    }
+    const QString text = times == 0 ? tr("The run %1 of the timing device %2 has no time.").arg(deviceRun).arg(slot)
+                                    : tr("Download of the run %1 of the timing device %2 finished: %3 times received, %4 new.")
+                                          .arg(deviceRun)
+                                          .arg(slot)
+                                          .arg(times)
+                                          .arg(m_offAdded);
+    statusBar()->showMessage(text, 30000);
+    QMessageBox::information(this, tr("Download"), text);
 }
 
 // ---- refresh ------------------------------------------------------------------------------
@@ -1766,7 +1948,7 @@ void TimingWindow::editRecordBib(int recordId)
 
 void TimingWindow::onUnassigned(int run, int recordId)
 {
-    if (run != m_run || !m_ev->params().timing.askBibIfUnknown)
+    if (run != m_run || m_offline || !m_ev->params().timing.askBibIfUnknown)
         return;
     const TimeRecord* r = m_engine->data().record(recordId);
     if (!r || r->bib > 0 || (r->flags & RecordFlag::Manual))
@@ -1976,6 +2158,12 @@ void TimingWindow::closeEvent(QCloseEvent* e)
     for (auto& d : m_devices)
         if (d && d->isOpen())
             anyOpen = true;
+    if (m_offline && m_offSlot > 0
+        && QMessageBox::question(this, tr("Exit Timing"), tr("A download from the timing device is in progress. Exit the timing?"))
+            != QMessageBox::Yes) {
+        e->ignore();
+        return;
+    }
     if (anyOpen
         && QMessageBox::question(this, tr("Exit Timing"), tr("The timing devices will be disconnected. Exit the timing?"))
             != QMessageBox::Yes) {

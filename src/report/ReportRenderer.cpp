@@ -1,11 +1,13 @@
 #include "ReportRenderer.h"
 #include "RefereeReport.h"
+#include "FreeHeader.h"
 #include "core/FisPenalty.h"
 #include "core/FisXml.h"
 #include <QRegularExpression>
 #include "core/Event.h"
 
 #include <QCoreApplication>
+#include <cmath>
 #include <QSet>
 #include <functional>
 #include <QDateTime>
@@ -17,6 +19,9 @@
 #include <QPageSize>
 #include <QPainter>
 #include <QPdfWriter>
+#include <QAbstractTextDocumentLayout>
+#include <QTextDocument>
+#include <memory>
 
 namespace {
 struct Tr {
@@ -24,6 +29,7 @@ struct Tr {
 };
 
 constexpr double kRefDpi = 1200.0;
+constexpr double kFrameGap = 6.0; // mm between the frames of a page with several columns
 
 const QImage& refDevice()
 {
@@ -35,6 +41,33 @@ const QImage& refDevice()
         return i;
     }();
     return img;
+}
+
+// rich text laid out at the resolution of the reference device, so that its size in mm is the
+// same on the screen, the printer and in the PDF
+QImage& richTextDevice()
+{
+    static QImage img = [] {
+        QImage i(4, 4, QImage::Format_ARGB32);
+        const int dpm = int(kRefDpi / 0.0254);
+        i.setDotsPerMeterX(dpm);
+        i.setDotsPerMeterY(dpm);
+        return i;
+    }();
+    return img;
+}
+
+std::unique_ptr<QTextDocument> freeHeaderDocument(const QString& html, double widthMm)
+{
+    auto doc = std::make_unique<QTextDocument>();
+    doc->documentLayout()->setPaintDevice(&richTextDevice());
+    QFont f = FreeHeader::defaultFont();
+    f.setHintingPreference(QFont::PreferNoHinting);
+    doc->setDefaultFont(f);
+    doc->setDocumentMargin(0);
+    doc->setHtml(html);
+    doc->setTextWidth(widthMm * kRefDpi / 25.4);
+    return doc;
 }
 
 QImage cachedImage(const QString& path)
@@ -59,23 +92,30 @@ ReportRenderer::ReportRenderer(const Event& ev, const ReportDocument& doc)
     : m_ev(ev)
     , m_doc(doc)
 {
-    const PrintingParams& pp = ev.params().printing;
     m_pageMm = doc.format.landscape ? QSizeF(297, 210) : QSizeF(210, 297);
-    m_fonts[FTitle1] = pp.fontTitle1;
-    m_fonts[FTitle2] = pp.fontTitle2;
-    m_fonts[FDocTitle] = pp.fontDocTitle;
-    m_fonts[FFooter] = pp.fontFooter;
-    m_fonts[FLabels] = pp.fontLabels;
-    m_fonts[FLines] = pp.fontLines;
-    m_fonts[FLinesBold] = pp.fontLines;
-    m_fonts[FLinesBold].setBold(true);
-    m_fonts[FHeader] = scaled(pp.fontLines, 7, false);
-    m_fonts[FHeaderBold] = scaled(pp.fontLines, 7, true);
-    m_fonts[FSection] = scaled(pp.fontLabels, pp.fontLines.pointSize(), true);
-    m_fonts[FBar] = scaled(pp.fontLines, 7, true);
-    for (auto& f : m_fonts)
-        f.setHintingPreference(QFont::PreferNoHinting);
+    m_fonts = fontsFor(ev);
     layout();
+}
+
+ReportRenderer::Fonts ReportRenderer::fontsFor(const Event& ev)
+{
+    const PrintingParams& pp = ev.params().printing;
+    Fonts fonts;
+    fonts[FTitle1] = pp.fontTitle1;
+    fonts[FTitle2] = pp.fontTitle2;
+    fonts[FDocTitle] = pp.fontDocTitle;
+    fonts[FFooter] = pp.fontFooter;
+    fonts[FLabels] = pp.fontLabels;
+    fonts[FLines] = pp.fontLines;
+    fonts[FLinesBold] = pp.fontLines;
+    fonts[FLinesBold].setBold(true);
+    fonts[FHeader] = scaled(pp.fontLines, 7, false);
+    fonts[FHeaderBold] = scaled(pp.fontLines, 7, true);
+    fonts[FSection] = scaled(pp.fontLabels, pp.fontLines.pointSize(), true);
+    fonts[FBar] = scaled(pp.fontLines, 7, true);
+    for (auto& f : fonts)
+        f.setHintingPreference(QFont::PreferNoHinting);
+    return fonts;
 }
 
 QString ReportRenderer::footerProgramText()
@@ -83,9 +123,91 @@ QString ReportRenderer::footerProgramText()
     return QStringLiteral("OpenSkiPro2 %1").arg(QStringLiteral(OSP_VERSION));
 }
 
+double ReportRenderer::textWidth(const Fonts& fonts, int font, const QString& s)
+{
+    return QFontMetricsF(fonts[size_t(font)], &refDevice()).horizontalAdvance(s) / (kRefDpi / 25.4);
+}
+
 double ReportRenderer::textWidth(int font, const QString& s) const
 {
-    return QFontMetricsF(m_fonts[size_t(font)], &refDevice()).horizontalAdvance(s) / (kRefDpi / 25.4);
+    return textWidth(m_fonts, font, s);
+}
+
+double ReportRenderer::charWidth(const Fonts& fonts)
+{
+    return textWidth(fonts, FLines, QStringLiteral("0")) * 1.15;
+}
+
+double ReportRenderer::frameSlot(const ReportFormat& fmt, double contentW)
+{
+    const int nCols = qBound(1, fmt.columns, 4);
+    return (contentW - (nCols - 1) * kFrameGap) / nCols;
+}
+
+double ReportRenderer::frameWidth(const ReportFormat& fmt, double contentW)
+{
+    return frameSlot(fmt, contentW) * qBound(30, fmt.tableWidth, 100) / 100.0;
+}
+
+// Auto adjust: the Width values share the table width; otherwise they are characters,
+// narrowed together when they do not fit the table
+QVector<double> ReportRenderer::columnWidths(const ReportFormat& fmt, bool autoAdjust, double frameW, double charW)
+{
+    QVector<double> widths;
+    double total = 0;
+    for (const auto& c : fmt.fields)
+        total += qMax(1, c.width);
+    for (const auto& c : fmt.fields)
+        widths << (autoAdjust || total <= 0 ? frameW * qMax(1, c.width) / total : qMax(1, c.width) * charW);
+    double sum = 0;
+    for (double w : widths)
+        sum += w;
+    if (sum > frameW && sum > 0)
+        for (double& w : widths)
+            w *= frameW / sum;
+    return widths;
+}
+
+ReportRenderer::TableFit ReportRenderer::tableFit(const Event& ev, const ReportDocument& doc)
+{
+    const ReportFormat& fmt = doc.format;
+    const Fonts fonts = fontsFor(ev);
+    const auto m = ev.params().printing.marginsFirst;
+    const double pageW = fmt.landscape ? 297 : 210;
+    TableFit fit;
+    fit.autoAdjust = ev.params().printing.autoAdjust;
+    fit.tableMm = frameWidth(fmt, pageW - m[2] - m[3]);
+    const double charW = charWidth(fonts);
+    fit.unitMm = charW;
+    QVector<double> need(fmt.fields.size(), 0.0);
+    auto measure = [&](int i, const QString& text, int font) {
+        const QStringList lines = text.split(QLatin1Char('\n'));
+        for (int l = 0; l < lines.size(); ++l)
+            need[i] = qMax(need[i], textWidth(fonts, l == 0 ? font : FLines, lines.at(l)));
+    };
+    for (int i = 0; i < fmt.fields.size(); ++i) {
+        fit.columnsMm += qMax(1, fmt.fields.at(i).width) * charW;
+        // the title of the column is printed in two lines when it has them
+        for (const QString& l : doc.columnLabels.value(i).split(QLatin1Char('\n')))
+            need[i] = qMax(need[i], textWidth(fonts, FLabels, l));
+    }
+    for (const auto& section : doc.sections) {
+        if (section.textRows)
+            continue;
+        for (const auto& row : section.rows) {
+            fit.measured = true;
+            for (int i = 0; i < fmt.fields.size(); ++i)
+                measure(i, row.value(i), fmt.fields.at(i).bold ? FLinesBold : FLines);
+        }
+    }
+    // cell padding 2 x 0.6 mm and half a mm of air, like the cells of layout()
+    const QVector<double> printed = columnWidths(fmt, fit.autoAdjust, fit.tableMm, charW);
+    for (int i = 0; i < need.size(); ++i) {
+        fit.fitWidths << qBound(1, int(std::ceil((need.at(i) + 1.7) / charW)), 99);
+        if (need.at(i) + 1.2 > printed.value(i) + 0.01)
+            fit.cutColumns << i;
+    }
+    return fit;
 }
 
 double ReportRenderer::lineHeight(int font) const
@@ -147,6 +269,22 @@ double ReportRenderer::layoutTitles(Page& page, double y, bool first) const
     y += 1.0;
     title(m_doc.docTitle, FDocTitle);
     return y + 2.0;
+}
+
+double ReportRenderer::layoutFreeHeader(Page& page, double y) const
+{
+    const QString& html = m_ev.params().general.freeHeader;
+    if (FreeHeader::isEmpty(html))
+        return y;
+    const auto m = margins(true);
+    const double w = m_pageMm.width() - m[2] - m[3];
+    const double h = freeHeaderDocument(html, w)->size().height() / (kRefDpi / 25.4);
+    Op op;
+    op.kind = Op::RichText;
+    op.r = QRectF(m[2], y + 1.0, w, h);
+    op.text = html;
+    page << op;
+    return y + h + 3.0;
 }
 
 double ReportRenderer::layoutHeaderBlock(Page& page, double y) const
@@ -319,7 +457,8 @@ double ReportRenderer::layoutHeaderBlock(Page& page, double y) const
     const auto& fp = m_ev.params().fisPoints;
     const ReportType rt = m_doc.format.type;
     const bool fis = m_ev.params().type.regulation == Regulation::FIS;
-    const bool ranking = rt == ReportType::RunRanking || rt == ReportType::RankingAfterRun || rt == ReportType::FinalRanking
+    const bool ranking = rt == ReportType::RunRanking || rt == ReportType::RunAnalysis || rt == ReportType::RankingAfterRun
+        || rt == ReportType::FinalRanking
         || rt == ReportType::FinalRankingPoints || rt == ReportType::PenaltyCalculation;
     const bool withPenalty = rt == ReportType::FinalRankingPoints || rt == ReportType::PenaltyCalculation;
     QVector<FisPenalty::Result> penalties;
@@ -592,7 +731,7 @@ void ReportRenderer::layout()
     const auto& pp = m_ev.params().printing;
     const ReportFormat& fmt = m_doc.format;
     const int nCols = qBound(1, fmt.columns, 4);
-    const double frameGap = 6.0;
+    const double frameGap = kFrameGap;
     const double footerH = lineHeight(FFooter) * 2.4;
     // cells with a second line (e.g. the club under the name) are two lines high
     const bool twoLines = fmt.hasSecondLines();
@@ -602,24 +741,7 @@ void ReportRenderer::layout()
     const double sectionH = lineHeight(FSection) * 1.8;
 
     // column geometry (relative to the frame origin)
-    auto columnGeometry = [&](double frameW) {
-        QVector<double> widths;
-        double total = 0;
-        for (const auto& c : fmt.fields)
-            total += qMax(1, c.width);
-        const double charW = textWidth(FLines, QStringLiteral("0"));
-        for (const auto& c : fmt.fields) {
-            double w = pp.autoAdjust || total <= 0 ? frameW * qMax(1, c.width) / total : qMax(1, c.width) * charW * 1.15;
-            widths << w;
-        }
-        double sum = 0;
-        for (double w : widths)
-            sum += w;
-        if (sum > frameW && sum > 0)
-            for (double& w : widths)
-                w *= frameW / sum;
-        return widths;
-    };
+    auto columnGeometry = [&](double frameW) { return columnWidths(fmt, pp.autoAdjust, frameW, charWidth(m_fonts)); };
 
     struct State {
         Page page;
@@ -664,14 +786,15 @@ void ReportRenderer::layout()
         st.w = m_pageMm.width() - m[2] - m[3];
         st.bottom = m_pageMm.height() - m[1] - footerH - 2.0;
         double y = layoutTitles(st.page, m[0], first);
-        if (first && fmt.printHeader && !m_ev.params().general.useFreeHeader)
-            y = layoutHeaderBlock(st.page, y);
+        // the free header of the event (rich text) takes the place of the jury / technical data
+        if (first && fmt.printHeader)
+            y = m_ev.params().general.useFreeHeader ? layoutFreeHeader(st.page, y) : layoutHeaderBlock(st.page, y);
         st.top = y;
         st.frame = 0;
         st.cursor = st.top;
         st.rowsOnPage = 0;
-        frameSlot = (st.w - (nCols - 1) * frameGap) / nCols;
-        frameW = frameSlot * qBound(30, fmt.tableWidth, 100) / 100.0;
+        frameSlot = ReportRenderer::frameSlot(fmt, st.w);
+        frameW = frameWidth(fmt, st.w);
         colW = columnGeometry(frameW);
         drawColumnHeader();
     };
@@ -917,6 +1040,17 @@ void ReportRenderer::paintPage(QPainter& p, int page, double pxPerMm) const
             const QRectF target(box.x() + (box.width() - s.width()) / 2, box.y() + (box.height() - s.height()) / 2,
                                 s.width(), s.height());
             p.drawImage(target, img);
+            break;
+        }
+        case Op::RichText: {
+            const auto doc = freeHeaderDocument(op.text, op.r.width());
+            const QRectF r = px(op.r);
+            p.save();
+            p.translate(r.topLeft());
+            const double scale = pxPerMm / (kRefDpi / 25.4);
+            p.scale(scale, scale);
+            doc->drawContents(&p);
+            p.restore();
             break;
         }
         case Op::Text: {

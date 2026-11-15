@@ -562,6 +562,22 @@ components:
         rank: { type: integer, nullable: true }
         gapMs: { type: integer, nullable: true }
         gap: { type: string, nullable: true }
+        groupRanks: { $ref: "#/components/schemas/GroupRanks" }
+        total:
+          type: object
+          nullable: true
+          description: >-
+            Run 2+ of a total-of-runs race: the total at the intermediate (total after the
+            previous runs + the intermediate time), ranked among the competitors of the run who
+            passed it (results: among the classified). Null in run 1, in a best-of-runs race and
+            for a competitor without a total after the previous runs.
+          properties:
+            timeMs: { type: integer }
+            time: { type: string }
+            rank: { type: integer }
+            gapMs: { type: integer }
+            gap: { type: string, nullable: true }
+            groupRanks: { $ref: "#/components/schemas/GroupRanks" }
     Unclassified:
       type: object
       properties:

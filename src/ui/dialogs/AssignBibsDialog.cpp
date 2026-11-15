@@ -320,10 +320,10 @@ void AssignBibsDialog::accept()
             + QStringList(clashes.mid(0, 15)).join(QLatin1Char('\n'));
         if (clashes.size() > 15)
             text += QStringLiteral("\n...");
-        text += QStringLiteral("\n\n") + tr("Assign the bibs anyway?");
-        if (QMessageBox::warning(this, windowTitle(), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
-            != QMessageBox::Yes)
-            return;
+        // a bib must be unique: the times and the results belong to it
+        text += QStringLiteral("\n\n") + tr("Change the first bib or select these competitors too.");
+        QMessageBox::warning(this, windowTitle(), text);
+        return;
     }
 
     AppSettings::setValue(QStringLiteral("assignBibs/mode"), int(mode()));

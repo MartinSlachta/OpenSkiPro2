@@ -63,6 +63,25 @@ static QHash<int, int> runRankMap(const RankingResult& r)
     return m;
 }
 
+// Sector k goes from the previous measuring point (start, inter k-1) to the next one (inter k,
+// finish). Computed from the shown times, so the sectors add up to the printed run time.
+static void fillSectors(RankedEntry& e, const TimeInfo& info, int interCount, Precision prec)
+{
+    qint64 prev = 0;
+    for (int k = 0; k <= interCount && k < kMaxSectors; ++k) {
+        qint64 cur = TimeUtil::kNoTime;
+        if (k < interCount) {
+            if (info.interMs[size_t(k)] >= 0)
+                cur = TimeUtil::truncateMs(info.interMs[size_t(k)], prec);
+        } else if (info.isClassified()) {
+            cur = TimeUtil::truncateMs(info.timeMs - info.penaltyMs, prec);
+        }
+        if (prev >= 0 && cur >= prev)
+            e.sectorMs[size_t(k)] = cur - prev;
+        prev = cur;
+    }
+}
+
 RankingResult runRanking(const Event& ev, int runNo)
 {
     RankingResult res;
@@ -84,6 +103,7 @@ RankingResult runRanking(const Event& ev, int runNo)
         e.reason = info.reason;
         e.penaltyMs = info.penaltyMs;
         e.interMs = info.interMs;
+        fillSectors(e, info, qBound(0, ev.interCount(), kMaxInter), prec);
         if (info.isClassified()) {
             e.timeMs = info.timeMs;
             e.shownMs = TimeUtil::truncateMs(info.timeMs, prec);
@@ -131,6 +151,20 @@ RankingResult runRanking(const Event& ev, int runNo)
             const qint64 cur = TimeUtil::truncateMs(withInter[k]->interMs[size_t(i)], prec);
             const qint64 prev = k > 0 ? TimeUtil::truncateMs(withInter[k - 1]->interMs[size_t(i)], prec) : -2;
             withInter[k]->interRank[size_t(i)] = (k > 0 && cur == prev) ? withInter[k - 1]->interRank[size_t(i)] : k + 1;
+        }
+    }
+    // sector ranks among the classified, like the intermediate ranks
+    for (int i = 0; i < kMaxSectors; ++i) {
+        QVector<RankedEntry*> with;
+        for (auto& e : res.classified)
+            if (e.sectorMs[size_t(i)] >= 0)
+                with << &e;
+        std::stable_sort(with.begin(), with.end(), [i](const RankedEntry* a, const RankedEntry* b) {
+            return a->sectorMs[size_t(i)] < b->sectorMs[size_t(i)];
+        });
+        for (int k = 0; k < with.size(); ++k) {
+            const bool tie = k > 0 && with[k]->sectorMs[size_t(i)] == with[k - 1]->sectorMs[size_t(i)];
+            with[k]->sectorRank[size_t(i)] = tie ? with[k - 1]->sectorRank[size_t(i)] : k + 1;
         }
     }
 
@@ -330,6 +364,9 @@ RankingResult subRanking(const RankingResult& all, const std::function<bool(int 
                    return e.interMs[size_t(i)] >= 0 ? TimeUtil::truncateMs(e.interMs[size_t(i)], prec) : TimeUtil::kNoTime;
                },
                [i](RankedEntry& e, int rank) { e.interRank[size_t(i)] = rank; });
+    for (int i = 0; i < kMaxSectors; ++i)
+        rankBy([i](const RankedEntry& e) { return e.sectorMs[size_t(i)]; },
+               [i](RankedEntry& e, int rank) { e.sectorRank[size_t(i)] = rank; });
     for (const auto& g : all.unclassified) {
         RankingGroup sub = g;
         sub.entries.clear();

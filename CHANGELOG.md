@@ -3,6 +3,97 @@
 OpenSkiPro2 uses version numbers 0.x until it has timed its first real FIS race
 (minor version = a batch of features, patch version = fixes).
 
+## 0.11.0 – 2026-11-15
+
+* **Timing Off-line** (Runs > *Timing Off-line*, like SkiPro *Chronométrage off-line*): the
+  timing window with the *Off-Line Mode* panel. The times are downloaded from the memory
+  of the timing device (CP540 `#DL`): choose the timing device (the first by default) and
+  its run number (session), then *Download*. Start, intermediates and finish follow the
+  channel mapping of the device; the number comes only from the device (channels "use
+  keyboard"), the others are assigned by hand like in the Timing. A second download adds
+  only the new times (and the numbers / cancellations changed on the device).
+  *Delete Existing Records* deletes all the timing information of the run (times, statuses,
+  penalties, results, timing device paper). Live impulses are ignored - the Timing (on-line)
+  records them. Only one timing window, on-line or off-line.
+* API: nothing is published while the Off-line timing is open; everything changed is
+  published at once when it is closed, without `competitor` messages.
+* CP540 simulator: answers `#DL` with its memory.
+
+## 0.10.0 – 2026-10-29
+
+* API: in run 2+ of a total-of-runs race every intermediate time has `total` - the total
+  at the intermediate (the total after the previous runs + the intermediate) with its
+  rank, gap and the ranks in the output groups, among those of the run who passed it
+  (live data, competitor events, results of a run).
+* Start List, Options: *Copy the start list of the previous run* - the start list of the
+  previous run as it is (also moved by hand), with or without the competitors who did not
+  finish it (DNS, NPS, DNF, DSQ).
+
+## 0.9.3 – 2026-10-29
+
+* API: every intermediate time has `groupRanks` - the rank and the gap of the
+  intermediate inside each output group of the competitor (live data, competitor
+  events, results of a run), like the run and the total times.
+
+## 0.9.2 – 2026-10-29
+
+* Run Analysis: the rank of a sector is printed in brackets, like the rank of a run.
+
+## 0.9.1 – 2026-10-29
+
+* Run Analysis: the sector fields are named *Sector N time*, *Sector N (rank)* and
+  *Sector N time (rank)*.
+
+## 0.9.0 – 2026-10-29
+
+* Output: *Run Analysis* (like SkiPro *Analyse de la manche*) - the run ranking with
+  the time and the rank of each sector: start - inter 1 - ... - finish, i.e. one sector
+  more than the intermediates of the event. The sectors are computed from the printed
+  times (they add up to the run time), ranked among the classified (again inside each
+  output group); also in the
+  menu of the Timing window.
+
+## 0.8.0 – 2026-10-29
+
+* Free header (General Parameters, *Use a free header*): *Header* opens a rich text
+  editor (*Print Heading*, like SkiPro) instead of the jury / technical data - bold,
+  italic, underline, alignment, font, also by the right button of the mouse; text pasted
+  from Word keeps its format. *Load* from a file (HTML, RTF, text) or another event,
+  *Save* to an HTML file. The lists with *Print Header* print it on the first page in
+  the place of the jury block.
+* SkiPro import: the text of the free header (RTF_HEADER) is imported with its format.
+
+## 0.7.8 – 2026-10-29
+
+* Competitor: *Last name in capitals* (a setting of the event, on by default) - off,
+  the last names typed in the form or imported from a file keep their case.
+* Competitor: an empty category shows the one it will get ("auto: ..."); when the
+  gender or the year changes, a category that came from the old ones is computed again
+  (a category typed by hand stays).
+* Multi-line fields (General Parameters, the title and notes of the lists, the comment
+  of an impulse): Tab goes to the next field instead of typing a tab. *Title* and
+  *Discipline* have at most 2 lines.
+
+## 0.7.7 – 2026-10-29
+
+* A bib must be unique: the competitor dialog and *Assign Bibs* no longer save a bib
+  that another competitor has (the times, the start list and the results belong to
+  the bib, the second competitor got no results). To swap two bibs, give one of them a
+  free bib first (e.g. +1000).
+* After an import of competitors (file, clipboard, another event) the bibs that several
+  competitors have are listed; the FIS XML export lists them among the things to check.
+
+## 0.7.6 – 2026-10-29
+
+* Start List: a run without a start list opens it empty and offers the *Options*
+  (order by bib, by points, random draw, from the previous run) instead of filling it
+  by itself; *Ok* used to save that list although nobody asked for it.
+* Print layouts: a line under the fields shows how the columns fit the table as
+  printed - with *Auto adjust* whether all the texts fit or which columns are cut
+  ("..."), without it the columns in % of the table width (free space, narrowed).
+  *Fit widths* sets the Width of each column from its longest text in the list, the
+  rest of the table goes to the widest left aligned column.
+
 ## 0.7.5 – 2026-10-27
 
 * Timing: a competitor who started is put into the start list (by the start time),

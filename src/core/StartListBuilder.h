@@ -22,4 +22,8 @@ QVector<StartEntry> firstRun(const Event& ev, FirstRunOrder order);
 // in reverse order, the rest in ranking order. reverseCount = 0 keeps the ranking order.
 QVector<StartEntry> nextRun(const Event& ev, int run, int reverseCount);
 
+// The start list of run `from` as it is (also moved by hand), without the planned start
+// times; skipOut leaves out the competitors with DNS / NPS / DNF / DSQ in that run.
+QVector<StartEntry> copyRun(const Event& ev, int from, bool skipOut);
+
 } // namespace StartListBuilder

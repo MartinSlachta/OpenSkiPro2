@@ -22,16 +22,24 @@ class QTableWidget;
 class QToolButton;
 class QWidget;
 class QAction;
+class QComboBox;
+class QPushButton;
+class QSpinBox;
+class QTimer;
+class QVBoxLayout;
 
 // Timing window of one run ("Timing - Run 1 / 2" in SkiPro).
+// Off-line timing (SkiPro "Chronométrage off-line"): the same window with the Off-Line panel; the live
+// impulses are ignored, the times are downloaded from the memory of the timing device (CP540 #DL).
 class TimingWindow : public QMainWindow {
     Q_OBJECT
 public:
     void showWithSavedGeometry(); // last position / size, maximized the first time
-    TimingWindow(Event* ev, int run, QWidget* parent = nullptr);
+    TimingWindow(Event* ev, int run, QWidget* parent = nullptr, bool offline = false);
     ~TimingWindow() override;
 
     int run() const { return m_run; }
+    bool isOffline() const { return m_offline; }
     void reloadDeviceConfig();
     TimingEngine* engine() const { return m_engine; }
     QVector<TimingDeviceState> deviceStates() const;
@@ -94,9 +102,24 @@ private:
     void onUnassigned(int run, int recordId);
     void softwareParameters();
     void openReport(int type);
+    // Off-line timing
+    QWidget* makeOfflinePanel(QWidget* parent);
+    void updateOfflinePanel();
+    void offlineDelete();
+    void offlineDownload();
+    void offlineDownloadDone(int deviceRun, int times, bool timeout);
 
     Event* m_ev;
     int m_run;
+    bool m_offline = false;
+    QComboBox* m_offDevice = nullptr;
+    QSpinBox* m_offRun = nullptr;
+    QPushButton* m_offDelete = nullptr;
+    QPushButton* m_offDownload = nullptr;
+    QLabel* m_offLamp = nullptr;
+    QTimer* m_offTimeout = nullptr;
+    int m_offSlot = 0;   // device of the download in progress (0 = none)
+    int m_offAdded = 0;  // records added by the download in progress
     TimingEngine* m_engine;
     std::array<QPointer<TimingDevice>, 3> m_devices;
     bool m_refreshPending = false;

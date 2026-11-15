@@ -140,6 +140,13 @@ QStringList warnings(const Event& ev)
                        .arg(p.type.runName(r), bibs.join(QStringLiteral(", ")));
         }
     }
+    const QVector<int> twice = ev.duplicateBibs();
+    if (!twice.isEmpty()) {
+        QStringList bibs;
+        for (int bib : twice)
+            bibs << QString::number(bib);
+        out << QCoreApplication::translate("FisXml", "Bibs that several competitors have: %1.").arg(bibs.join(QStringLiteral(", ")));
+    }
     for (const auto& c : ev.competitors())
         if (!ev.isForerunner(c.bib) && c.code.trimmed().isEmpty()) {
             out << QCoreApplication::translate("FisXml", "Some competitors have no FIS code.");

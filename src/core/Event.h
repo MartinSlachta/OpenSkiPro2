@@ -52,6 +52,7 @@ public:
     // Bibs of run r (start list, results, time records) that no competitor has: they have
     // no name in the results and the outputs (warned on leaving the Timing, FIS XML).
     QVector<int> bibsWithoutCompetitor(int r) const;
+    QVector<int> duplicateBibs() const; // bibs that several competitors have (an import, an old event)
 
     // -- runs (1-based)
     const RunData& run(int r) const;

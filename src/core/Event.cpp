@@ -126,6 +126,21 @@ QVector<int> Event::bibsWithoutCompetitor(int r) const
     return out;
 }
 
+QVector<int> Event::duplicateBibs() const
+{
+    QSet<int> seen, twice;
+    for (const auto& c : m_competitors) {
+        if (c.bib <= 0)
+            continue;
+        if (seen.contains(c.bib))
+            twice.insert(c.bib);
+        seen.insert(c.bib);
+    }
+    QVector<int> out(twice.cbegin(), twice.cend());
+    std::sort(out.begin(), out.end());
+    return out;
+}
+
 const Competitor* Event::competitorByBib(int bib) const
 {
     if (bib <= 0)
