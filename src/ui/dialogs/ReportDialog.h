@@ -3,6 +3,7 @@
 #include "report/ReportFormat.h"
 
 #include <QDialog>
+#include <QStringList>
 #include <array>
 
 class Event;
@@ -10,6 +11,7 @@ struct ReportDocument;
 class QCheckBox;
 class QComboBox;
 class QLabel;
+class QPushButton;
 class QLineEdit;
 class QPlainTextEdit;
 class QSpinBox;
@@ -40,6 +42,8 @@ private:
     void preview();
     void print();
     void exportFile();
+    void exportClipboard();
+    static QList<QStringList> tableLines(const ReportDocument& doc);
     void save();
     void resetDefaults();
     void loadFromFile();
@@ -64,6 +68,7 @@ private:
     QCheckBox* m_notClassified;
     QCheckBox* m_byGroups;
     QLabel* m_info;
+    QPushButton* m_clipboardBtn = nullptr;
     QLabel* m_fitInfo;              // columns against the table width
     bool m_loading = false;         // no updateInfo while a layout is being shown
 };

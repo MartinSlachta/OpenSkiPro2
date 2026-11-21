@@ -3,6 +3,12 @@
 OpenSkiPro2 uses version numbers 0.x until it has timed its first real FIS race
 (minor version = a batch of features, patch version = fixes).
 
+## 0.12.0 – 2026-11-21
+
+* Lists (start lists, results, all the print windows): *Copy to Clipboard* next to
+  *Export* - the list as a table (the same lines as the CSV export), pasted into Excel as
+  cells and into Word as a table.
+
 ## 0.11.3 – 2026-11-21
 
 * Timing: a number of a record changed or removed by the operator is written into the

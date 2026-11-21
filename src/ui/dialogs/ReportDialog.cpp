@@ -10,6 +10,10 @@
 #include "ui/UiHelpers.h"
 
 #include <QCheckBox>
+#include <QClipboard>
+#include <QGuiApplication>
+#include <QMimeData>
+#include <QToolTip>
 #include <QComboBox>
 #include <QDir>
 #include <QFile>
@@ -216,8 +220,10 @@ ReportDialog::ReportDialog(Event* ev, ReportType type, int run, QWidget* parent)
     auto* prev = UiHelpers::button(QStringLiteral("preview"), tr("Preview (F1)"), this);
     auto* printBtn = UiHelpers::button(QStringLiteral("print"), tr("Print (F2)"), this);
     auto* exportBtn = UiHelpers::button(QStringLiteral("export"), tr("Export"), this);
+    m_clipboardBtn = UiHelpers::button(QStringLiteral("clipboard"), tr("Copy to Clipboard"), this);
+    m_clipboardBtn->setToolTip(tr("The list as a table: paste it into Excel, Word ..."));
     for (auto* w : { static_cast<QWidget*>(close), static_cast<QWidget*>(m_info), static_cast<QWidget*>(prev),
-                     static_cast<QWidget*>(printBtn), static_cast<QWidget*>(exportBtn) }) {
+                     static_cast<QWidget*>(printBtn), static_cast<QWidget*>(exportBtn), static_cast<QWidget*>(m_clipboardBtn) }) {
         w->setMinimumWidth(180);
         right->addWidget(w);
     }
@@ -228,6 +234,7 @@ ReportDialog::ReportDialog(Event* ev, ReportType type, int run, QWidget* parent)
     connect(prev, &QPushButton::clicked, this, &ReportDialog::preview);
     connect(printBtn, &QPushButton::clicked, this, &ReportDialog::print);
     connect(exportBtn, &QPushButton::clicked, this, &ReportDialog::exportFile);
+    connect(m_clipboardBtn, &QPushButton::clicked, this, &ReportDialog::exportClipboard);
     connect(add, &QToolButton::clicked, this, &ReportDialog::addField);
     connect(del, &QToolButton::clicked, this, &ReportDialog::removeField);
     connect(up, &QToolButton::clicked, this, [this] { moveField(-1); });
@@ -688,26 +695,15 @@ void ReportDialog::exportFile()
         out.setEncoding(QStringConverter::Utf8);
         out.setGenerateByteOrderMark(true);
         auto quote = [](QString s) {
-            s.replace(QLatin1Char('\n'), QStringLiteral(" / ")); // cell with a second line
             if (s.contains(QLatin1Char(';')) || s.contains(QLatin1Char('"')))
                 s = QLatin1Char('"') + s.replace(QLatin1Char('"'), QStringLiteral("\"\"")) + QLatin1Char('"');
             return s;
         };
-        QStringList head;
-        for (const auto& l : doc.columnLabels)
-            head << quote(l);
-        out << head.join(QLatin1Char(';')) << '\n';
-        for (const auto& s : doc.sections) {
-            if (!s.heading.isEmpty())
-                out << quote(s.heading) << '\n';
-            for (int ri = 0; ri < s.rows.size(); ++ri) {
-                QStringList cells;
-                for (const auto& c : s.rows.at(ri))
-                    cells << quote(c);
-                if (!s.notes.value(ri).isEmpty())
-                    cells << quote(s.notes.value(ri));
-                out << cells.join(QLatin1Char(';')) << '\n';
-            }
+        for (const QStringList& line : tableLines(doc)) {
+            QStringList cells;
+            for (const auto& c : line)
+                cells << quote(c);
+            out << cells.join(QLatin1Char(';')) << '\n';
         }
         return;
     }
@@ -715,4 +711,66 @@ void ReportDialog::exportFile()
     QString err;
     if (!renderer.exportPdf(file, &err))
         QMessageBox::warning(this, windowTitle(), err);
+}
+
+// The lines of the list as a table: the column labels, the headings of the sections and the
+// rows (with their note in a last cell). A cell with a second line is joined with " / ".
+QList<QStringList> ReportDialog::tableLines(const ReportDocument& doc)
+{
+    auto cell = [](QString s) { return s.replace(QLatin1Char('\n'), QStringLiteral(" / ")); };
+    QList<QStringList> lines;
+    QStringList head;
+    for (const auto& l : doc.columnLabels)
+        head << cell(l);
+    lines << head;
+    for (const auto& s : doc.sections) {
+        if (!s.heading.isEmpty())
+            lines << QStringList{ cell(s.heading) };
+        for (int ri = 0; ri < s.rows.size(); ++ri) {
+            QStringList cells;
+            for (const auto& c : s.rows.at(ri))
+                cells << cell(c);
+            if (!s.notes.value(ri).isEmpty())
+                cells << cell(s.notes.value(ri));
+            lines << cells;
+        }
+    }
+    return lines;
+}
+
+// Copy to the Clipboard: tab separated text (Excel, Notepad) and an HTML table (Word, Excel).
+void ReportDialog::exportClipboard()
+{
+    save();
+    const ReportDocument doc = ReportBuilder::build(*m_ev, format(), run());
+    const QList<QStringList> lines = tableLines(doc);
+    QString text;
+    QString html = QStringLiteral("<html><head><meta charset=\"utf-8\"></head><body><table border=\"1\" cellspacing=\"0\" cellpadding=\"2\">");
+    int columns = 0;
+    for (const auto& line : lines)
+        columns = qMax(columns, int(line.size()));
+    for (int i = 0; i < lines.size(); ++i) {
+        const QStringList& line = lines.at(i);
+        QStringList cells;
+        for (QString c : line)
+            cells << c.replace(QLatin1Char('\t'), QLatin1Char(' '));
+        text += cells.join(QLatin1Char('\t')) + QStringLiteral("\r\n");
+        const QString tag = i == 0 ? QStringLiteral("th") : QStringLiteral("td");
+        html += QStringLiteral("<tr>");
+        if (line.size() == 1 && i > 0 && columns > 1) {
+            // heading of a section over the whole width
+            html += QStringLiteral("<td colspan=\"%1\"><b>%2</b></td>").arg(columns).arg(line.first().toHtmlEscaped());
+        } else {
+            for (const auto& c : line)
+                html += QStringLiteral("<%1>%2</%1>").arg(tag, c.toHtmlEscaped());
+        }
+        html += QStringLiteral("</tr>");
+    }
+    html += QStringLiteral("</table></body></html>");
+    auto* mime = new QMimeData;
+    mime->setText(text);
+    mime->setHtml(html);
+    QGuiApplication::clipboard()->setMimeData(mime);
+    QToolTip::showText(m_clipboardBtn->mapToGlobal(QPoint(0, m_clipboardBtn->height())),
+                       tr("Copied to the Clipboard: %n line(s)", nullptr, int(lines.size()) - 1), m_clipboardBtn, QRect(), 3000);
 }
