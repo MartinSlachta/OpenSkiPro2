@@ -75,13 +75,19 @@ TimingOptionsDialog::TimingOptionsDialog(Event* ev, QWidget* parent)
     m_askBib = new QCheckBox(tr("Ask for bib if it is unknown"), timing);
     m_seq = new QCheckBox(tr("Show the sequence number (Seq) in the timing records"), timing);
     m_seq->setChecked(o.showSeqColumn);
+    m_lockAll = new QCheckBox(tr("Start/Ints/Finish locked: numbers from the timing device (otherwise automatic)"), timing);
+    m_lockAll->setToolTip(tr("Mode of all the points when the timing opens or this option changes.\n"
+                             "Locked: the number of the timing device.\n"
+                             "Automatic: the number of OpenSkiPro2 (typed / numbers to follow), otherwise the one of the timing device.\n"
+                             "F1 / F2 / F3 or the context menu still lock / unlock during the timing."));
+    m_lockAll->setChecked(o.lockAll);
     m_follow->setChecked(o.showNumbersToFollow);
     m_mark->setChecked(o.showMarkMustFinish);
     m_names->setChecked(o.showNamesInFollow);
     m_confirm->setChecked(o.confirmInsertStartList);
     m_invert->setChecked(o.invertGrid);
     m_askBib->setChecked(o.askBibIfUnknown);
-    for (auto* c : { m_follow, m_mark, m_names, m_confirm, m_invert, m_askBib, m_seq })
+    for (auto* c : { m_follow, m_mark, m_names, m_confirm, m_invert, m_askBib, m_seq, m_lockAll })
         tl->addWidget(c);
     ol->addWidget(timing);
 
@@ -201,6 +207,7 @@ TimingOptions TimingOptionsDialog::options(const TimingOptions& base) const
     o.invertGrid = m_invert->isChecked();
     o.askBibIfUnknown = m_askBib->isChecked();
     o.showSeqColumn = m_seq->isChecked();
+    o.lockAll = m_lockAll->isChecked();
     o.forerunnerFrom = m_foreFrom->value();
     o.forerunnerTo = m_foreTo->value();
     for (int i = 0; i < 4; ++i)

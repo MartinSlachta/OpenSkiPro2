@@ -83,6 +83,7 @@ TimingWindow::TimingWindow(Event* ev, int run, QWidget* parent, bool offline)
     , m_engine(new TimingEngine(ev, this))
 {
     m_engine->setRun(run);
+    setAllLocked(ev->params().timing.lockAll);
     setWindowTitle((offline ? tr("Timing Off-line - %1 / %2") : tr("Timing - %1 / %2"))
                        .arg(ev->params().type.runName(run))
                        .arg(ev->runCount()));
@@ -1666,6 +1667,13 @@ int TimingWindow::selectedBib() const
 
 // ---- actions ------------------------------------------------------------------------------
 
+void TimingWindow::setAllLocked(bool locked)
+{
+    m_engine->setLocked(TimingEngine::Group::Start, locked);
+    m_engine->setLocked(TimingEngine::Group::Inter, locked);
+    m_engine->setLocked(TimingEngine::Group::Finish, locked);
+}
+
 void TimingWindow::toggleLock(int group)
 {
     if (group < 0) {
@@ -1967,8 +1975,13 @@ void TimingWindow::softwareParameters()
     TimingOptionsDialog dlg(m_ev, this);
     if (dlg.exec() == QDialog::Accepted) {
         EventParams p = m_ev->params();
+        const bool lockAll = p.timing.lockAll;
         p.timing = dlg.options(p.timing);
         m_ev->setParams(p);
+        if (p.timing.lockAll != lockAll) {
+            setAllLocked(p.timing.lockAll);
+            updateLockIndicators();
+        }
     }
 }
 
@@ -2036,6 +2049,21 @@ void TimingWindow::showGridMenu(QTableWidget* g, const QPoint& pos)
 
     QMenu menu(this);
     menu.addAction(m_aLock);
+    // lock / unlock of the point where the menu is opened (the intermediates are locked together)
+    {
+        const auto group = TimingEngine::groupOf(point);
+        const bool locked = m_engine->isLocked(group);
+        const QString where = group == TimingEngine::Group::Inter ? tr("Intermediates") : UiHelpers::pointName(point);
+        QAction* aPointLock = menu.addAction(UiHelpers::icon(locked ? QStringLiteral("ball_red") : QStringLiteral("ball_green")),
+                                             locked ? tr("%1: Unlock (automatic numbers)").arg(where)
+                                                    : tr("%1: Lock (numbers of the timing device)").arg(where));
+        // shortcut shown only: F2 / F3 are the actions of the Options menu
+        if (group == TimingEngine::Group::Start)
+            aPointLock->setText(aPointLock->text() + QStringLiteral("\tF2"));
+        else if (group == TimingEngine::Group::Finish)
+            aPointLock->setText(aPointLock->text() + QStringLiteral("\tF3"));
+        connect(aPointLock, &QAction::triggered, this, [this, group] { toggleLock(int(group)); });
+    }
     menu.addSeparator();
     menu.addAction(m_aActive);
     menu.addAction(m_aInactive);

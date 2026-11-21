@@ -268,6 +268,7 @@ QVariantMap EventParams::toMap() const
     m[QStringLiteral("timing.showNetTime")] = timing.showNetTime;
     m[QStringLiteral("timing.askBibIfUnknown")] = timing.askBibIfUnknown;
     m[QStringLiteral("timing.showSeqColumn")] = timing.showSeqColumn;
+    m[QStringLiteral("timing.lockAll")] = timing.lockAll;
     m[QStringLiteral("timing.forerunnerFrom")] = timing.forerunnerFrom;
     m[QStringLiteral("timing.forerunnerTo")] = timing.forerunnerTo;
     for (size_t i = 0; i < timing.quickPenaltiesMs.size(); ++i)
@@ -445,6 +446,7 @@ void EventParams::fromMap(const QVariantMap& m)
     timing.invertGrid = flag(QStringLiteral("timing.invertGrid"), true);
     timing.showNetTime = flag(QStringLiteral("timing.showNetTime"), false);
     timing.showSeqColumn = flag(QStringLiteral("timing.showSeqColumn"), true);
+    timing.lockAll = flag(QStringLiteral("timing.lockAll"), false);
     timing.askBibIfUnknown = flag(QStringLiteral("timing.askBibIfUnknown"), false);
     timing.forerunnerFrom = int(num(QStringLiteral("timing.forerunnerFrom"), 901));
     timing.forerunnerTo = int(num(QStringLiteral("timing.forerunnerTo"), 999));

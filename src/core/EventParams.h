@@ -129,6 +129,7 @@ struct TimingOptions {
     bool showNetTime = false;
     bool askBibIfUnknown = false;
     bool showSeqColumn = true;     // Seq column in the timing records
+    bool lockAll = false;          // all points locked (numbers of the timing device) when the timing opens
     int forerunnerFrom = 901;
     int forerunnerTo = 999;
     std::array<qint64, 4> quickPenaltiesMs{ {0, 0, 0, 0} };

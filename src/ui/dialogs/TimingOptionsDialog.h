@@ -29,6 +29,7 @@ private:
     QCheckBox* m_mark;
     QCheckBox* m_names;
     QCheckBox* m_seq;
+    QCheckBox* m_lockAll;
     QCheckBox* m_confirm;
     QCheckBox* m_invert;
     QCheckBox* m_askBib;

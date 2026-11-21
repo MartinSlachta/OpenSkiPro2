@@ -364,8 +364,9 @@ void TimingEngine::startedIntoStartList()
             && (!started.contains(r.bib) || r.dayTimeUs < started.value(r.bib)))
             started.insert(r.bib, r.dayTimeUs);
     QVector<int> missing;
+    // forerunners are never put into the start list
     for (auto it = started.cbegin(); it != started.cend(); ++it)
-        if (run.startPosition(it.key()) < 0)
+        if (run.startPosition(it.key()) < 0 && !m_ev->isForerunner(it.key()))
             missing << it.key();
     if (missing.isEmpty())
         return;
@@ -420,10 +421,22 @@ int TimingEngine::handleImpulse(const TimingImpulse& imp)
         const int oldBib = rec.bib;
         if (imp.type == TimingImpulse::Type::Cancelled) {
             rec.flags |= RecordFlag::Cancelled;
-        } else if (imp.type == TimingImpulse::Type::IdRemoved) {
-            rec.bib = 0;
         } else {
-            rec.bib = imp.bib;
+            // number changed / removed on the timing device: applied when the point is locked or
+            // the record has no number yet, otherwise the number of OSP2 stays (comment only)
+            const int newBib = imp.type == TimingImpulse::Type::IdRemoved ? 0 : qMax(0, imp.bib);
+            if (newBib == oldBib)
+                return 0;
+            const bool apply = isLocked(groupOf(rec.point)) || oldBib == 0;
+            const QString text = apply
+                ? (newBib > 0 ? tr("Bib changed on the timing device: %1 -> %2").arg(oldBib).arg(newBib)
+                              : tr("Bib %1 removed on the timing device").arg(oldBib))
+                : (newBib > 0 ? tr("Timing device changed the bib to %1, kept %2 (automatic)").arg(newBib).arg(oldBib)
+                              : tr("Timing device removed the bib, kept %1 (automatic)").arg(oldBib));
+            if (apply)
+                rec.bib = newBib;
+            if (oldBib > 0)
+                rec.note = rec.note.isEmpty() ? text : rec.note + QStringLiteral("; ") + text;
         }
         m_ev->saveRecord(m_run, rec);
         recompute(oldBib);
@@ -476,17 +489,36 @@ int TimingEngine::handleImpulse(const TimingImpulse& imp)
         rec.flags |= RecordFlag::Inactive;
         Q_EMIT message(tr("Impulse ignored (within the timing impulse delay): %1").arg(TimeUtil::formatDayTime(dayTime)));
     } else {
+        // Number of the impulse:
+        //  - point locked: the number of the timing device; without one the first typed number
+        //  - point unlocked (automatic): the number of OSP2 (first typed number, otherwise the first
+        //    number to follow), without one the number of the timing device. A number of the device
+        //    replaced by OSP2 is written into the comment of the record.
+        //  - a recovered time (recall) only takes the number of the device
         int bib = 0;
-        if (imp.bib > 0) {
-            bib = imp.bib;
-        } else if (imp.type == TimingImpulse::Type::Recalled) {
-            Q_EMIT message(tr("Recovered time %1 (channel %2) - please assign a number")
-                               .arg(TimeUtil::formatDayTime(dayTime))
-                               .arg(imp.channel));
-        } else if (!m_typed.value(point).isEmpty()) {
-            bib = m_typed[point].takeFirst();
-        } else if (!isLocked(groupOf(point))) {
-            bib = m_follow.value(point).value(0);
+        const bool locked = isLocked(groupOf(point));
+        if (imp.type == TimingImpulse::Type::Recalled) {
+            bib = qMax(0, imp.bib);
+            if (bib == 0)
+                Q_EMIT message(tr("Recovered time %1 (channel %2) - please assign a number")
+                                   .arg(TimeUtil::formatDayTime(dayTime))
+                                   .arg(imp.channel));
+        } else if (locked) {
+            if (imp.bib > 0)
+                bib = imp.bib;
+            else if (!m_typed.value(point).isEmpty())
+                bib = m_typed[point].takeFirst();
+        } else {
+            // a forerunner number of the device is kept (only a typed number replaces it):
+            // forerunners are not in the numbers to follow of the start
+            int osp = 0;
+            if (!m_typed.value(point).isEmpty())
+                osp = m_typed[point].takeFirst();
+            else if (!(imp.bib > 0 && m_ev->isForerunner(imp.bib)))
+                osp = m_follow.value(point).value(0);
+            bib = osp > 0 ? osp : qMax(0, imp.bib);
+            if (osp > 0 && imp.bib > 0 && imp.bib != osp)
+                rec.note = tr("Bib %1 of the timing device replaced by %2").arg(imp.bib).arg(osp);
         }
         // minimum time: false impulse
         if (bib > 0 && point != Point::Start && minTimeMs(point) > 0) {
@@ -623,6 +655,14 @@ bool TimingEngine::setRecordBib(int recordId, int bib)
     TimeRecord rec = *found;
     const int oldBib = rec.bib;
     rec.bib = qMax(0, bib);
+    if (rec.bib == oldBib)
+        return true;
+    // a number replaced by the operator is written into the comment of the record
+    if (oldBib > 0) {
+        const QString text = rec.bib > 0 ? tr("Bib changed by the operator: %1 -> %2").arg(oldBib).arg(rec.bib)
+                                         : tr("Bib %1 removed by the operator").arg(oldBib);
+        rec.note = rec.note.isEmpty() ? text : rec.note + QStringLiteral("; ") + text;
+    }
     if (!m_ev->saveRecord(m_run, rec))
         return false;
     // the number of the record was typed: do not give it to the next impulse too

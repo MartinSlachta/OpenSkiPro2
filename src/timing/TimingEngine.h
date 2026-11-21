@@ -17,7 +17,9 @@ class Event;
 //    the order of the times at the previous point. The operator can reorder it.
 //  - every point has a queue of numbers typed by the operator; the next
 //    impulse takes the first typed number, otherwise (point not locked) the
-//    first number to follow
+//    first number to follow. Point unlocked: the number of OSP2 has priority over
+//    the number of the timing device (written into the comment when replaced);
+//    point locked: the number of the timing device
 //  - an impulse within the "timing impulse delay" after the previous impulse
 //    of the point, below the minimum time, or a second impulse of the same
 //    competitor within 5 s is recorded inactive

@@ -3,6 +3,30 @@
 OpenSkiPro2 uses version numbers 0.x until it has timed its first real FIS race
 (minor version = a batch of features, patch version = fixes).
 
+## 0.11.3 – 2026-11-21
+
+* Timing: a number of a record changed or removed by the operator is written into the
+  comment of the record.
+* Software Parameters, Timing Options: *Start/Ints/Finish locked* - the mode of all the
+  points (locked = numbers from the timing device, otherwise automatic) when the timing
+  opens or the option changes; F1 / F2 / F3 and the context menu still switch it.
+
+## 0.11.2 – 2026-11-21
+
+* Timing: a forerunner number sent by the timing device is not put into the start list
+  any more, and an unlocked point keeps it (only a typed number replaces it).
+
+## 0.11.1 – 2026-11-21
+
+* Timing, automatic lock: a point **unlocked** (Automatic) gives the impulse the number of
+  OpenSkiPro2 (the typed number, otherwise the first number to follow), the number of the
+  timing device only when OpenSkiPro2 has none; a device number replaced this way is
+  written into the comment of the record. A point **locked** takes the number of the
+  timing device. A number changed / removed on the device afterwards is applied when the
+  point is locked or the record has no number, otherwise only written into the comment.
+* Timing: the context menu of the grids has the lock / unlock of the point where it is
+  opened (the intermediates together).
+
 ## 0.11.0 – 2026-11-15
 
 * **Timing Off-line** (Runs > *Timing Off-line*, like SkiPro *Chronométrage off-line*): the

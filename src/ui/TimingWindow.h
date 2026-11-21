@@ -83,6 +83,7 @@ private:
 
     // actions
     void toggleLock(int group); // -1 all
+    void setAllLocked(bool locked); // Software Parameters: Start/Ints/Finish locked
     void setSelectedActive(bool active);
     void insertPassage();
     void shiftNumber(int direction);
