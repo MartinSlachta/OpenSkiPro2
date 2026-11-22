@@ -14,4 +14,5 @@ private:
     QLineEdit* m_events;
     QLineEdit* m_logos;
     QLineEdit* m_export;
+    QLineEdit* m_skiAlpTemplate;
 };

@@ -109,6 +109,8 @@ struct PrintingParams {
     bool showAsTable = false;
     bool grayRows = true;
     int grayLevel = 10;          // percent
+    int rowSpacing = 1;          // lines of the tables: 0 compact, 1 normal (like SkiPro), 2 wide
+    double rowSpacingFactor() const;
     // margins in mm: top, bottom, left, right
     std::array<int, 4> marginsFirst{ {25, 25, 5, 5} };
     std::array<int, 4> marginsOther{ {25, 25, 5, 5} };

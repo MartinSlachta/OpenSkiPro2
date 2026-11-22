@@ -5,7 +5,10 @@
 #include <QMainWindow>
 #include <QPointer>
 
+#include <memory>
+
 class ApiServer;
+class QLockFile;
 class Event;
 class HeaderBanner;
 class NavPanel;
@@ -39,6 +42,11 @@ private:
     void createMenus();
     void updateState();
     void showPage(QWidget* page);
+    // Lock "<event>.osp.lock": another OpenSkiPro2 with the same event open is reported (two instances
+    // overwrite each other's data). False = cancelled by the user; lock stays null when not lockable.
+    bool lockEvent(const QString& path, const QString& title, std::unique_ptr<QLockFile>& lock);
+    void keepEventLock(const QString& path, std::unique_ptr<QLockFile> lock);
+    bool openElsewhere(const QString& path) const;
 
     // Files
     void openEvent();
@@ -60,6 +68,7 @@ private:
     void updateFisCompetitors();
     void editFisPenalty();
     void exportFisXml();
+    void exportSkiAlp();
     // Local configuration
     void editFolders();
     void editTimingDevice(int slot);
@@ -68,6 +77,8 @@ private:
     void about();
 
     Event* m_event;
+    std::unique_ptr<QLockFile> m_eventLock; // released when the event is closed
+    QString m_eventLockPath;
     HeaderBanner* m_banner;
     NavPanel* m_nav;
     QStackedWidget* m_stack;
@@ -89,6 +100,7 @@ private:
     QAction* m_actDelete = nullptr;
     QAction* m_actImportSkiPro = nullptr;
     QAction* m_actImportSkiAlp = nullptr;
+    QAction* m_actExportSkiAlp = nullptr;
     QAction* m_actOutputGroups = nullptr;
     QAction* m_actCompetitorFields = nullptr;
     QAction* m_actCategories = nullptr;

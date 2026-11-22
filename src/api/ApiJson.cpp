@@ -79,6 +79,10 @@ QString fieldKey(int fieldId)
     case CompField::Club: return QStringLiteral("club");
     case CompField::Team: return QStringLiteral("team");
     case CompField::Custom: return QStringLiteral("custom");
+    case CompField::Custom2: return QStringLiteral("custom2");
+    case CompField::Custom3: return QStringLiteral("custom3");
+    case CompField::Custom4: return QStringLiteral("custom4");
+    case CompField::Custom5: return QStringLiteral("custom5");
     default: return QString();
     }
 }
@@ -101,7 +105,8 @@ QJsonObject competitor(const Event& ev, const Competitor& c)
     o.insert(QStringLiteral("region"), text(c.region));
     o.insert(QStringLiteral("club"), text(c.club));
     o.insert(QStringLiteral("team"), text(c.team));
-    o.insert(QStringLiteral("custom"), text(c.custom));
+    for (int i = 0; i < CompField::kCustomCount; ++i)
+        o.insert(fieldKey(CompField::customField(i)), text(c.custom[size_t(i)]));
     o.insert(QStringLiteral("forerunner"), ev.isForerunner(c.bib));
     o.insert(QStringLiteral("groups"), groupsOf(ev, c));
     return o;

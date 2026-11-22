@@ -31,6 +31,23 @@ constexpr int PointsSL = 24;
 constexpr int PointsAC = 25;
 constexpr int Custom = 32;
 constexpr int Name = 38; // "LAST First"
+// Custom 2..5: own ids after SkiPro's numbering (it ends with Name = 38), below 100
+// (ids 100+ are the report columns, ReportFormat.h)
+constexpr int Custom2 = 39;
+constexpr int Custom3 = 40;
+constexpr int Custom4 = 41;
+constexpr int Custom5 = 42;
+constexpr int kCustomCount = 5;
+// Index 0..4 of a custom field (Custom, Custom2..Custom5), -1 for the other fields.
+constexpr int customIndex(int fieldId)
+{
+    return fieldId == Custom ? 0 : (fieldId >= Custom2 && fieldId <= Custom5) ? fieldId - Custom2 + 1 : -1;
+}
+// Field id of the custom field with index 0..4.
+constexpr int customField(int index)
+{
+    return index == 0 ? Custom : Custom2 + index - 1;
+}
 }
 
 struct Competitor {
@@ -49,7 +66,7 @@ struct Competitor {
     QString team;
     QString fromList;    // points list number the data comes from
     std::array<int, kDisciplineCount> points{ {-1, -1, -1, -1, -1} }; // hundredths, -1 = none
-    QString custom;
+    std::array<QString, CompField::kCustomCount> custom; // Custom, Custom2..Custom5
 
     QString fullName() const; // "LAST First"
     int pointsFor(Discipline d) const { return points[size_t(d)]; }

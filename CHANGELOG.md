@@ -3,6 +3,52 @@
 OpenSkiPro2 uses version numbers 0.x until it has timed its first real FIS race
 (minor version = a batch of features, patch version = fixes).
 
+## 0.14.0 – 2026-11-22
+
+* Manage Runs: search fields *Num* and *Competitor* above the ranking. Only the bibs starting
+  with the number and the competitors whose name contains the text are shown (accents and
+  case are ignored, "duric" finds ĎURICOVÁ). The search stays while the ranking is updated.
+* Printing Parameters › Display: *Row Spacing* of the printed lists - *Compact* (the rows
+  of the former versions), *Normal* (default, like SkiPro / SkiAlp Pro) or *Wide*.
+
+## 0.13.3 – 2026-11-22
+
+* An event open in another OpenSkiPro2 is reported when it is opened (also at the start of the
+  program, created or imported): two OpenSkiPro2 with the same event overwrite each other's
+  data (times, start lists, results). *Open anyway* or *Cancel*. The lock is the file
+  `EventNNN.osp.lock` next to the event; after a crash it is ignored automatically.
+  Another OpenSkiPro2 with a different event (e.g. beside SkiAlp Pro) is not affected.
+* Delete Event and Restore an Event refuse an event open in another OpenSkiPro2.
+
+## 0.13.2 – 2026-11-22
+
+* Modify Data: the *Close* button renamed to *Save & Close*. Tooltips explain that *Cancel*
+  discards only the changes of the current competitor (the competitors left with the arrows
+  or the Bib. are already saved) and when *Back to the times records* is useful (only for a
+  result entered manually).
+
+## 0.13.1 – 2026-11-22
+
+* Export to SkiAlp Pro 11: the forerunners (bibs of *Timing options › Forerunners*) are no
+  longer in the start lists and the results of the archive; SkiAlp Pro ranked them as
+  competitors without a name. Their start / finish impulses stay.
+* Exit Timing and the FIS XML check no longer report the forerunners as bibs that are not
+  in the competitors list.
+
+## 0.13.0 – 2026-11-22
+
+* **Export to SkiAlp Pro 11** (Files › Manage Events): the current state of the event as a
+  SkiAlp Pro archive (`*.spro`) that SkiAlp Pro loads with its own import, so a race can
+  continue in SkiAlp Pro - before the start (competitors, start lists) and after a run
+  (+ results, start / finish impulses, the next start list). Made from a template, an
+  empty event exported from SkiAlp Pro with your print layouts: *Local configuration ›
+  Folders › SkiAlp Pro 11 template*. The relay token is never carried over; the file is
+  read back and checked before it is saved.
+* Import of SkiAlp Pro events: a DNS / DNF / DSQ entered manually in SkiAlp Pro is a
+  manual status record (no time) in OpenSkiPro2 too.
+* Competitor fields *Custom 2* … *Custom 5*; the import of competitors (file and
+  clipboard) offers only the active fields, under their labels.
+
 ## 0.12.0 – 2026-11-21
 
 * Lists (start lists, results, all the print windows): *Copy to Clipboard* next to

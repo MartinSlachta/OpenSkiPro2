@@ -231,6 +231,21 @@ QDate SkiProImporter::fromDelphiDate(double days)
     return QDate(1899, 12, 30).addDays(qint64(days));
 }
 
+int SkiProImporter::toDelphiDate(const QDate& date)
+{
+    return date.isValid() ? int(QDate(1899, 12, 30).daysTo(date)) : 0;
+}
+
+int SkiProImporter::fieldFromSource(int sourceId, Format format)
+{
+    return ::fieldFromSource(sourceId, format);
+}
+
+int SkiProImporter::fieldToSource(int fieldId, Format format)
+{
+    return ::fieldToSource(fieldId, format);
+}
+
 bool SkiProImporter::read(const QString& mainFile, Result& out, QString* error, const QString& logosDir)
 {
     // runs: tables live in the Ex file (SEPARATE_FILES=1) or in the main file
@@ -596,7 +611,7 @@ bool SkiProImporter::readDatabases(const QString& mainFile, const QString& runsF
             c.club = s(cClub);
             c.team = s(cTeam);
             c.fromList = s(cList);
-            c.custom = s(cCustom);
+            c.custom[0] = s(cCustom);
             for (int i = 0; i < 5; ++i)
                 c.points[size_t(i)] = cPts[i] >= 0 ? pointsValue(q.value(cPts[i])) : -1;
             out.competitors << c;
@@ -688,6 +703,10 @@ bool SkiProImporter::readDatabases(const QString& mainFile, const QString& runsF
                 t.flags = status == 1 ? RecordFlag::DNS : status == 2 ? RecordFlag::DNF : status == 3 ? RecordFlag::DSQ : 0;
                 if (st & 0x0001)
                     t.flags |= RecordFlag::Inactive;
+                // third byte 2: entered manually (SkiAlp Pro "Enter a DNS / DNF / DSQ number",
+                // the time is only when it was typed, see docs/skialp-export-design.md)
+                if (((st >> 16) & 0xFF) == 2 && status >= 1 && status <= 3)
+                    t.flags |= RecordFlag::Manual | RecordFlag::StatusEntry;
                 t.dayTimeUs = q.value(3).toString().toLongLong();
                 t.device = 1;
                 run.records << t;

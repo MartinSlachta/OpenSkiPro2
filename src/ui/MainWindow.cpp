@@ -12,6 +12,7 @@
 #include "app/AppSettings.h"
 #include "core/Event.h"
 #include "core/FisXml.h"
+#include "db/SkiAlpExporter.h"
 #include "db/SkiAlpImporter.h"
 #include "dialogs/OutputGroupsDialog.h"
 #include "db/SkiProImporter.h"
@@ -42,8 +43,14 @@
 #include <QFileInfo>
 #include <QLabel>
 #include <QLocale>
+#include <QLockFile>
 #include <QMenuBar>
+#include <QSysInfo>
 #include <QMessageBox>
+#include <QDateTime>
+#include <QDesktopServices>
+#include <QPushButton>
+#include <QUrl>
 #include <QScrollArea>
 #include <QSplitter>
 #include <QStackedWidget>
@@ -130,6 +137,10 @@ MainWindow::MainWindow(QWidget* parent)
     connect(m_event, &Event::paramsChanged, this, &MainWindow::updateState);
     connect(m_event, &Event::opened, this, &MainWindow::updateState);
     connect(m_event, &Event::closed, this, &MainWindow::updateState);
+    connect(m_event, &Event::closed, this, [this] {
+        m_eventLock.reset();
+        m_eventLockPath.clear();
+    });
 
     // API for the other applications (docs/api.md), state in the status bar
     m_api = new ApiServer(m_event, this);
@@ -180,6 +191,7 @@ void MainWindow::createActions()
     m_actDelete = mk(tr("Delete Event"), QStringLiteral("delete"), &MainWindow::deleteEvent, false);
     m_actImportSkiPro = mk(tr("Import a SkiPro Event..."), QStringLiteral("import"), [this] { importEvent(false); }, false);
     m_actImportSkiAlp = mk(tr("Import a SkiAlp Pro 11 Event..."), QStringLiteral("import"), [this] { importEvent(true); }, false);
+    m_actExportSkiAlp = mk(tr("Export to SkiAlp Pro 11..."), QStringLiteral("export"), &MainWindow::exportSkiAlp, true);
     m_actQuit = mk(tr("Exit Program"), QStringLiteral("close"), &QWidget::close, false);
 
     m_actGeneral = mk(tr("General Parameters"), QStringLiteral("params"), &MainWindow::editGeneralParameters, true);
@@ -246,6 +258,7 @@ void MainWindow::createMenus()
     manage->addSeparator();
     manage->addAction(m_actImportSkiPro);
     manage->addAction(m_actImportSkiAlp);
+    manage->addAction(m_actExportSkiAlp);
     files->addSeparator();
     files->addAction(m_actQuit);
 
@@ -339,8 +352,73 @@ void MainWindow::showPage(QWidget* page)
     m_stack->setCurrentWidget(page);
 }
 
+static QString eventLockPath(const QString& eventFile)
+{
+    return QFileInfo(eventFile).absoluteFilePath() + QStringLiteral(".lock");
+}
+
+bool MainWindow::lockEvent(const QString& path, const QString& title, std::unique_ptr<QLockFile>& lock)
+{
+    lock.reset();
+    const QString lp = eventLockPath(path);
+    if (m_eventLock && m_eventLockPath.compare(lp, Qt::CaseInsensitive) == 0) {
+        lock = std::move(m_eventLock); // the same event again: our own lock
+        return true;
+    }
+    auto l = std::make_unique<QLockFile>(lp);
+    l->setStaleLockTime(0); // stale only when its process does not run anymore (crash)
+    if (l->tryLock(0)) {
+        lock = std::move(l);
+        return true;
+    }
+    if (l->error() != QLockFile::LockFailedError)
+        return true; // cannot be locked (read-only folder): opened without the lock
+    qint64 pid = 0;
+    QString host, app;
+    l->getLockInfo(&pid, &host, &app);
+    const QString where = !host.isEmpty() && host.compare(QSysInfo::machineHostName(), Qt::CaseInsensitive) != 0
+        ? tr(" on the computer %1").arg(host)
+        : QString();
+    QMessageBox box(QMessageBox::Warning, title,
+                    tr("This event is already open in another OpenSkiPro2%1 (process %2).\n\n"
+                       "Two OpenSkiPro2 with the same event overwrite each other's data "
+                       "(times, start lists, results). Close the event in the other OpenSkiPro2 first.\n\n"
+                       "Open it anyway only when you are sure the other OpenSkiPro2 does not change the event "
+                       "or does not run anymore.")
+                        .arg(where)
+                        .arg(pid),
+                    QMessageBox::NoButton, this);
+    auto* anyway = box.addButton(tr("Open anyway"), QMessageBox::AcceptRole);
+    box.setDefaultButton(box.addButton(QMessageBox::Cancel));
+    box.exec();
+    return box.clickedButton() == anyway;
+}
+
+void MainWindow::keepEventLock(const QString& path, std::unique_ptr<QLockFile> lock)
+{
+    m_eventLock = std::move(lock);
+    m_eventLockPath = m_eventLock ? eventLockPath(path) : QString();
+}
+
+bool MainWindow::openElsewhere(const QString& path) const
+{
+    const QString lp = eventLockPath(path);
+    if (m_eventLock && m_eventLockPath.compare(lp, Qt::CaseInsensitive) == 0)
+        return false;
+    QLockFile l(lp);
+    l.setStaleLockTime(0);
+    if (l.tryLock(0)) {
+        l.unlock();
+        return false;
+    }
+    return l.error() == QLockFile::LockFailedError;
+}
+
 bool MainWindow::openEventFile(const QString& path)
 {
+    std::unique_ptr<QLockFile> lock;
+    if (!lockEvent(path, tr("Open an Event"), lock))
+        return false;
     if (m_timing)
         m_timing->close();
     QString err;
@@ -348,6 +426,7 @@ bool MainWindow::openEventFile(const QString& path)
         QMessageBox::warning(this, tr("Open an Event"), tr("Cannot open the event:\n%1").arg(err));
         return false;
     }
+    keepEventLock(path, std::move(lock));
     AppSettings::setValue(QStringLiteral("general/lastEvent"), path);
     showPage(m_competitorsPage);
     return true;
@@ -363,11 +442,15 @@ void MainWindow::openEvent()
         if (QMessageBox::question(this, tr("Open an Event"), tr("This Event does not exist. Do you want to create it?"))
             != QMessageBox::Yes)
             return;
+        std::unique_ptr<QLockFile> lock;
+        if (!lockEvent(path, tr("Open an Event"), lock))
+            return;
         QString err;
         if (!m_event->create(path, &err)) {
             QMessageBox::warning(this, tr("Open an Event"), err);
             return;
         }
+        keepEventLock(path, std::move(lock));
         AppSettings::setValue(QStringLiteral("general/lastEvent"), path);
         showPage(m_competitorsPage);
         editGeneralParameters();
@@ -427,6 +510,11 @@ void MainWindow::restoreEvent()
     if (dlg.exec() != QDialog::Accepted)
         return;
     const QString target = eventPath(dlg.selectedSlot());
+    if (openElsewhere(target)) {
+        QMessageBox::warning(this, tr("Restore an Event"),
+                             tr("The event of this location is open in another OpenSkiPro2. Close it there first."));
+        return;
+    }
     if (QFileInfo::exists(target)) {
         if (QMessageBox::question(this, tr("Restore an Event"), tr("This location is already used. Replace the event?"))
             != QMessageBox::Yes)
@@ -450,6 +538,11 @@ void MainWindow::deleteEvent()
     if (dlg.exec() != QDialog::Accepted)
         return;
     const QString path = eventPath(dlg.selectedSlot());
+    if (openElsewhere(path)) {
+        QMessageBox::warning(this, tr("Delete Event"),
+                             tr("This event is open in another OpenSkiPro2. Close it there first."));
+        return;
+    }
     if (QMessageBox::question(this, tr("Delete Event"), tr("Are you sure you want to delete this event?")) != QMessageBox::Yes)
         return;
     if (m_event->path() == path)
@@ -482,10 +575,16 @@ void MainWindow::importEvent(bool skiAlp)
     if (dlg.exec() != QDialog::Accepted)
         return;
     const QString target = eventPath(dlg.selectedSlot());
+    std::unique_ptr<QLockFile> lock;
+    if (!lockEvent(target, title, lock))
+        return;
     if (m_timing)
         m_timing->close();
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    bool done = m_event->create(target, &err) && SkiProImporter::apply(data, *m_event, &err);
+    bool done = m_event->create(target, &err);
+    if (done)
+        keepEventLock(target, std::move(lock));
+    done = done && SkiProImporter::apply(data, *m_event, &err);
     QApplication::restoreOverrideCursor();
     if (!done) {
         QMessageBox::warning(this, title, err);
@@ -659,6 +758,58 @@ void MainWindow::exportFisXml()
                              tr("The FIS XML file was created:\n%1\n\nSend it to FIS (results@fisski.com) "
                                 "or submit it in the FIS Member Section.")
                                  .arg(QDir::toNativeSeparators(file)));
+}
+
+void MainWindow::exportSkiAlp()
+{
+    if (!m_event->isOpen())
+        return;
+    const QString title = tr("Export to SkiAlp Pro 11");
+    QString err;
+    const QString tpl = AppSettings::skiAlpTemplate();
+    if (tpl.isEmpty()) {
+        QMessageBox::information(this, title,
+                                 tr("Set the SkiAlp Pro 11 template in Local configuration > Folders first: an empty "
+                                    "event exported from SkiAlp Pro (*.spro), with your print layouts."));
+        return;
+    }
+    if (!SkiAlpExporter::checkTemplate(tpl, &err)) {
+        QMessageBox::warning(this, title, err);
+        return;
+    }
+    const QString dir = AppSettings::value(QStringLiteral("folders/skialpExport"), AppSettings::exportDir()).toString();
+    QDir().mkpath(dir);
+    QString file = QFileDialog::getSaveFileName(
+        this, title, QDir(dir).absoluteFilePath(SkiAlpExporter::defaultFileName(m_event->path(), QDateTime::currentDateTime())),
+        tr("SkiAlp Pro event (*.spro)"));
+    if (file.isEmpty())
+        return;
+    if (!file.endsWith(QLatin1String(".spro"), Qt::CaseInsensitive))
+        file += QStringLiteral(".spro");
+    AppSettings::setValue(QStringLiteral("folders/skialpExport"), QFileInfo(file).absolutePath());
+    SkiAlpExporter::Report rep;
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    const bool ok = SkiAlpExporter::write(*m_event, tpl, file, &rep, &err);
+    QApplication::restoreOverrideCursor();
+    if (!ok) {
+        QMessageBox::warning(this, title, err);
+        return;
+    }
+    QStringList lines;
+    lines << tr("Exported to %1").arg(QDir::toNativeSeparators(file)) << QString()
+          << tr("%1 competitors").arg(rep.competitors);
+    for (int i = 0; i < rep.runs.size(); ++i)
+        lines << tr("Run %1: %2 in the start list, %3 results").arg(i + 1).arg(rep.runs.at(i).startList).arg(rep.runs.at(i).results);
+    if (m_timing)
+        lines << QString() << tr("Impulses that arrive during the export are not in the file.");
+    if (!rep.warnings.isEmpty())
+        lines << QString() << tr("Please check:") << rep.warnings;
+    QMessageBox box(rep.warnings.isEmpty() ? QMessageBox::Information : QMessageBox::Warning, title,
+                    lines.join(QLatin1Char('\n')), QMessageBox::Ok, this);
+    QPushButton* openFolder = box.addButton(tr("Open folder"), QMessageBox::ActionRole);
+    box.exec();
+    if (box.clickedButton() == openFolder)
+        QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file).absolutePath()));
 }
 
 void MainWindow::editFolders()

@@ -83,9 +83,13 @@ ModifyDataDialog::ModifyDataDialog(Event* ev, int run, int bib, QWidget* parent)
 
     auto* buttons = new QHBoxLayout;
     auto* reset = new QPushButton(tr("Back to the times records"), this);
-    reset->setToolTip(tr("Forget the manual data and compute the result from the times records again"));
+    reset->setToolTip(tr("Forget the manually entered result and compute it from the times records again.\n"
+                         "Only useful when the result was entered manually (see the note above)."));
     auto* cancel = UiHelpers::button(QStringLiteral("cancel"), tr("Cancel"), this);
-    auto* close = UiHelpers::button(QStringLiteral("close"), tr("Close"), this);
+    cancel->setToolTip(tr("Close without saving the changes of the current competitor.\n"
+                          "Competitors left with the arrows or the Bib. are already saved."));
+    auto* close = UiHelpers::button(QStringLiteral("close"), tr("Save && Close"), this);
+    close->setToolTip(tr("Save the changes and close"));
     buttons->addWidget(reset);
     buttons->addStretch();
     buttons->addWidget(cancel);

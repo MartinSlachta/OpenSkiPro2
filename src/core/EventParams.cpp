@@ -35,6 +35,16 @@ PrintingParams::PrintingParams()
         logos[i].rect = QRectF(0.35, 0.015, 0.30, 0.065);
 }
 
+double PrintingParams::rowSpacingFactor() const
+{
+    // line height x factor: compact = the former OpenSkiPro2 rows, normal = rows of SkiPro / SkiAlp Pro
+    switch (rowSpacing) {
+    case 0: return 1.2;
+    case 2: return 1.42;
+    default: return 1.27;
+    }
+}
+
 QString CompetitorFieldConfig::label(int fieldId) const
 {
     const QString l = labels.value(fieldId);
@@ -58,6 +68,10 @@ bool CompetitorFieldConfig::canBePublic(int fieldId)
     case CompField::Club:
     case CompField::Team:
     case CompField::Custom:
+    case CompField::Custom2:
+    case CompField::Custom3:
+    case CompField::Custom4:
+    case CompField::Custom5:
         return true;
     default:
         return false;
@@ -247,6 +261,7 @@ QVariantMap EventParams::toMap() const
     m[QStringLiteral("print.showAsTable")] = printing.showAsTable;
     m[QStringLiteral("print.grayRows")] = printing.grayRows;
     m[QStringLiteral("print.grayLevel")] = printing.grayLevel;
+    m[QStringLiteral("print.rowSpacing")] = printing.rowSpacing;
     m[QStringLiteral("print.marginsFirst")] = joinInts({ printing.marginsFirst[0], printing.marginsFirst[1],
                                                          printing.marginsFirst[2], printing.marginsFirst[3] });
     m[QStringLiteral("print.marginsOther")] = joinInts({ printing.marginsOther[0], printing.marginsOther[1],
@@ -421,6 +436,7 @@ void EventParams::fromMap(const QVariantMap& m)
     printing.showAsTable = flag(QStringLiteral("print.showAsTable"), false);
     printing.grayRows = flag(QStringLiteral("print.grayRows"), true);
     printing.grayLevel = int(num(QStringLiteral("print.grayLevel"), 10));
+    printing.rowSpacing = qBound(0, int(num(QStringLiteral("print.rowSpacing"), 1)), 2);
     const QList<int> mf = splitInts(str("print.marginsFirst"));
     const QList<int> mo = splitInts(str("print.marginsOther"));
     for (int i = 0; i < 4; ++i) {

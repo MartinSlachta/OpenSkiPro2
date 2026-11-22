@@ -120,7 +120,7 @@ QVector<int> Event::bibsWithoutCompetitor(int r) const
             bibs.insert(rec.bib);
     QVector<int> out;
     for (int bib : bibs)
-        if (bib > 0 && !competitorByBib(bib))
+        if (bib > 0 && !isForerunner(bib) && !competitorByBib(bib))
             out << bib;
     std::sort(out.begin(), out.end());
     return out;

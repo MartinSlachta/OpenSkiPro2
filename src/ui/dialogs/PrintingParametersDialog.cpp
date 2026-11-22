@@ -93,6 +93,14 @@ PrintingParametersDialog::PrintingParametersDialog(Event* ev, QWidget* parent)
     dl->addWidget(m_grayRows);
     dl->addWidget(new QLabel(tr("Gray Level :"), display));
     dl->addWidget(m_grayLevel);
+    dl->addSpacing(12);
+    m_rowSpacing = new QComboBox(display);
+    m_rowSpacing->addItems({ tr("Compact"), tr("Normal"), tr("Wide") });
+    m_rowSpacing->setCurrentIndex(qBound(0, m_pp.rowSpacing, 2));
+    m_rowSpacing->setToolTip(tr("Height of the lines of the printed lists.\n"
+                                "Normal = like SkiPro / SkiAlp Pro, Compact = more lines on a page."));
+    dl->addWidget(new QLabel(tr("Row Spacing :"), display));
+    dl->addWidget(m_rowSpacing);
     lay->addWidget(display);
 
     // margins
@@ -195,6 +203,7 @@ void PrintingParametersDialog::collect(PrintingParams& pp) const
     pp.showAsTable = m_asTable->isChecked();
     pp.grayRows = m_grayRows->isChecked();
     pp.grayLevel = m_grayLevel->value();
+    pp.rowSpacing = m_rowSpacing->currentIndex();
     for (int i = 0; i < 4; ++i) {
         pp.marginsFirst[size_t(i)] = m_marginFirst[size_t(i)]->value();
         pp.marginsOther[size_t(i)] = m_marginOther[size_t(i)]->value();

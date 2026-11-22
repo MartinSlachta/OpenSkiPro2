@@ -21,6 +21,9 @@ QString logosDir();
 void setLogosDir(const QString& dir);
 QString exportDir();
 void setExportDir(const QString& dir);
+// SkiAlp Pro 11 event archive (*.spro, an empty event) used as the template of the export to SkiAlp Pro
+QString skiAlpTemplate();
+void setSkiAlpTemplate(const QString& file);
 // Database of the imported FIS points list (shared by all events), next to the settings file.
 QString fisListPath();
 

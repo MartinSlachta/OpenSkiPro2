@@ -6,6 +6,7 @@ class Event;
 class QComboBox;
 class QPoint;
 class QLabel;
+class QLineEdit;
 class QTableWidget;
 
 // "Manage Runs" page: run selector, counters, start list / timing / data
@@ -23,6 +24,7 @@ Q_SIGNALS:
 private:
     void setRun(int run);
     void refresh();
+    void applyFilter();
     void editStartList();
     void modifyData();
     void modifyBib(int bib); // 0: the first of the start list
@@ -42,5 +44,7 @@ private:
     QLabel* m_cDsq;
     QLabel* m_cNotProcessed;
     QComboBox* m_rankingMode;
+    QLineEdit* m_searchBib;
+    QLineEdit* m_searchName;
     QTableWidget* m_ranking;
 };

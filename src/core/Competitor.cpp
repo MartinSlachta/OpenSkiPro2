@@ -35,10 +35,11 @@ QString Competitor::value(int fieldId) const
     case CompField::Club: return club;
     case CompField::Team: return team;
     case CompField::FromList: return fromList;
-    case CompField::Custom: return custom;
     case CompField::Name: return fullName();
     default: break;
     }
+    if (const int ci = CompField::customIndex(fieldId); ci >= 0)
+        return custom[size_t(ci)];
     const int pi = pointsIndex(fieldId);
     if (pi >= 0)
         return TimeUtil::formatPoints(points[size_t(pi)]);
@@ -62,7 +63,6 @@ void Competitor::setValue(int fieldId, const QString& v)
     case CompField::Club: club = t; return;
     case CompField::Team: team = t; return;
     case CompField::FromList: fromList = t; return;
-    case CompField::Custom: custom = t; return;
     case CompField::Name: {
         // "LAST First Second": first token(s) in upper case are the last name
         const QStringList parts = t.split(QLatin1Char(' '), Qt::SkipEmptyParts);
@@ -80,6 +80,10 @@ void Competitor::setValue(int fieldId, const QString& v)
         return;
     }
     default: break;
+    }
+    if (const int ci = CompField::customIndex(fieldId); ci >= 0) {
+        custom[size_t(ci)] = t;
+        return;
     }
     const int pi = pointsIndex(fieldId);
     if (pi >= 0)
@@ -122,6 +126,10 @@ const QList<CompetitorFieldDef>& competitorFieldDefs()
         { CompField::PointsSL, QT_TRANSLATE_NOOP("Competitor", "Slalom"), true, true },
         { CompField::PointsAC, QT_TRANSLATE_NOOP("Competitor", "Alpine Combined"), true, true },
         { CompField::Custom, QT_TRANSLATE_NOOP("Competitor", "Custom"), false, false },
+        { CompField::Custom2, QT_TRANSLATE_NOOP("Competitor", "Custom 2"), false, false },
+        { CompField::Custom3, QT_TRANSLATE_NOOP("Competitor", "Custom 3"), false, false },
+        { CompField::Custom4, QT_TRANSLATE_NOOP("Competitor", "Custom 4"), false, false },
+        { CompField::Custom5, QT_TRANSLATE_NOOP("Competitor", "Custom 5"), false, false },
     };
     return defs;
 }

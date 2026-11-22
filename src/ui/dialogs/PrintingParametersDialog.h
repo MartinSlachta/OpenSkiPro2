@@ -31,6 +31,7 @@ private:
     QCheckBox* m_asTable;
     QCheckBox* m_grayRows;
     QSpinBox* m_grayLevel;
+    QComboBox* m_rowSpacing;
     std::array<QSpinBox*, 4> m_marginFirst{};
     std::array<QSpinBox*, 4> m_marginOther{};
     QComboBox* m_alignFirst;

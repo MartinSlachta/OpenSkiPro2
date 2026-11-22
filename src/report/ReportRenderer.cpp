@@ -736,8 +736,9 @@ void ReportRenderer::layout()
     // cells with a second line (e.g. the club under the name) are two lines high
     const bool twoLines = fmt.hasSecondLines();
     const double headerRowH = lineHeight(FLabels) * (twoLines ? 2.3 : 1.3);
-    const double lineH = lineHeight(FLines) * 1.2;
-    const double rowH = twoLines ? lineHeight(FLines) * 2.25 : lineH;
+    const double spacing = pp.rowSpacingFactor(); // Printing Parameters: compact / normal / wide
+    const double lineH = lineHeight(FLines) * spacing;
+    const double rowH = twoLines ? lineHeight(FLines) * 2.25 * spacing / 1.2 : lineH;
     const double sectionH = lineHeight(FSection) * 1.8;
 
     // column geometry (relative to the frame origin)

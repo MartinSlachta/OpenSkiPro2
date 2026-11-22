@@ -86,6 +86,16 @@ void setExportDir(const QString& dir)
     setValue(QStringLiteral("folders/export"), dir);
 }
 
+QString skiAlpTemplate()
+{
+    return value(QStringLiteral("folders/skialpTemplate")).toString();
+}
+
+void setSkiAlpTemplate(const QString& file)
+{
+    setValue(QStringLiteral("folders/skialpTemplate"), file);
+}
+
 QString fisListPath()
 {
     return QFileInfo(iniPath()).absoluteDir().absoluteFilePath(QStringLiteral("FisList.db"));

@@ -116,7 +116,30 @@ void CsvImportDialog::rebuildPreview()
 {
     const int cols = m_table.columnCount();
     const bool header = m_header->isChecked();
-    const QList<int> guess = header && !m_table.rows.isEmpty() ? CsvImporter::guessMapping(m_table.rows.first()) : QList<int>();
+    QList<int> guess = header && !m_table.rows.isEmpty() ? CsvImporter::guessMapping(m_table.rows.first()) : QList<int>();
+    // only the active fields of the event are offered, each under its label (the field name
+    // when it has none); a column named like the label of an active field is put into it
+    const CompetitorFieldConfig& fields = m_ev->params().fields;
+    QList<int> offered;
+    for (const auto& d : competitorFieldDefs())
+        if (fields.isActive(d.id) || d.id == CompField::Bib)
+            offered << d.id;
+    if (header && !m_table.rows.isEmpty()) {
+        const QStringList& names = m_table.rows.first();
+        while (guess.size() < cols)
+            guess << 0;
+        for (int c = 0; c < cols; ++c) {
+            const QString name = names.value(c).trimmed();
+            if (name.isEmpty())
+                continue;
+            for (int id : offered) {
+                if (fields.labels.value(id).trimmed().compare(name, Qt::CaseInsensitive) == 0) {
+                    guess[c] = id;
+                    break;
+                }
+            }
+        }
+    }
     // the fields chosen last time in this window: by the column name, otherwise by the position
     QList<int> lastFields;
     for (const QString& f : AppSettings::value(settingsKey() + QStringLiteral("/fields")).toStringList())
@@ -142,8 +165,8 @@ void CsvImportDialog::rebuildPreview()
         headers << (header && !m_table.rows.isEmpty() ? m_table.rows.first().value(c) : tr("Column %1").arg(c + 1));
         auto* cb = new QComboBox(m_preview);
         cb->addItem(tr("(ignore)"), 0);
-        for (const auto& d : competitorFieldDefs())
-            cb->addItem(QCoreApplication::translate("Competitor", d.label), d.id);
+        for (int id : offered)
+            cb->addItem(fields.label(id), id);
         const int last = lastFieldFor(c, headers.last());
         const int f = last >= 0 ? last : guess.value(c);
         cb->setCurrentIndex(qMax(0, cb->findData(f)));

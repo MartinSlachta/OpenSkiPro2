@@ -138,7 +138,7 @@ bool EventDb::createSchema()
         " last_name TEXT, first_name TEXT, code TEXT, gender INTEGER, year INTEGER,"
         " category TEXT, nation TEXT, region TEXT, club TEXT, team TEXT, from_list TEXT,"
         " pts_dh INTEGER, pts_sg INTEGER, pts_gs INTEGER, pts_sl INTEGER, pts_sc INTEGER,"
-        " custom TEXT)",
+        " custom TEXT, custom2 TEXT, custom3 TEXT, custom4 TEXT, custom5 TEXT)",
         "CREATE TABLE IF NOT EXISTS start_list(run INTEGER, position INTEGER, bib INTEGER,"
         " start_time INTEGER, PRIMARY KEY(run, position))",
         "CREATE TABLE IF NOT EXISTS time_records(run INTEGER, id INTEGER, point INTEGER,"
@@ -154,6 +154,20 @@ bool EventDb::createSchema()
     };
     for (const char* s : stmts)
         if (!exec(QString::fromLatin1(s)))
+            return false;
+    // columns added later: an event of an older version gets them when it is opened (the
+    // older version still opens the event, it does not know the columns)
+    const QStringList added = { QStringLiteral("custom2"), QStringLiteral("custom3"), QStringLiteral("custom4"),
+                                QStringLiteral("custom5") };
+    QStringList existing;
+    {
+        QSqlQuery q(QSqlDatabase::database(m_connection));
+        if (q.exec(QStringLiteral("PRAGMA table_info(competitors)")))
+            while (q.next())
+                existing << q.value(1).toString();
+    }
+    for (const QString& col : added)
+        if (!existing.contains(col) && !exec(QStringLiteral("ALTER TABLE competitors ADD COLUMN %1 TEXT").arg(col)))
             return false;
     return true;
 }
@@ -231,7 +245,7 @@ bool EventDb::setMeta(const QString& key, const QString& value)
 
 static const char* kCompetitorColumns =
     "bib, transponder, last_name, first_name, code, gender, year, category, nation, region,"
-    " club, team, from_list, pts_dh, pts_sg, pts_gs, pts_sl, pts_sc, custom";
+    " club, team, from_list, pts_dh, pts_sg, pts_gs, pts_sl, pts_sc, custom, custom2, custom3, custom4, custom5";
 
 static void bindCompetitor(QSqlQuery& q, const Competitor& c)
 {
@@ -250,7 +264,8 @@ static void bindCompetitor(QSqlQuery& q, const Competitor& c)
     q.addBindValue(c.fromList);
     for (int p : c.points)
         q.addBindValue(p);
-    q.addBindValue(c.custom);
+    for (const QString& v : c.custom)
+        q.addBindValue(v);
 }
 
 QVector<Competitor> EventDb::loadCompetitors()
@@ -278,7 +293,8 @@ QVector<Competitor> EventDb::loadCompetitors()
         c.fromList = q.value(i++).toString();
         for (auto& p : c.points)
             p = q.value(i++).toInt();
-        c.custom = q.value(i++).toString();
+        for (auto& v : c.custom)
+            v = q.value(i++).toString();
         out << c;
     }
     return out;
@@ -287,7 +303,7 @@ QVector<Competitor> EventDb::loadCompetitors()
 bool EventDb::insertCompetitor(Competitor& c)
 {
     QSqlQuery q(QSqlDatabase::database(m_connection));
-    q.prepare(QStringLiteral("INSERT INTO competitors(%1) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    q.prepare(QStringLiteral("INSERT INTO competitors(%1) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
                   .arg(QLatin1String(kCompetitorColumns)));
     bindCompetitor(q, c);
     if (!q.exec())
@@ -302,7 +318,7 @@ bool EventDb::updateCompetitor(const Competitor& c)
     q.prepare(QStringLiteral(
         "UPDATE competitors SET bib=?, transponder=?, last_name=?, first_name=?, code=?, gender=?, year=?,"
         " category=?, nation=?, region=?, club=?, team=?, from_list=?, pts_dh=?, pts_sg=?, pts_gs=?,"
-        " pts_sl=?, pts_sc=?, custom=? WHERE id=?"));
+        " pts_sl=?, pts_sc=?, custom=?, custom2=?, custom3=?, custom4=?, custom5=? WHERE id=?"));
     bindCompetitor(q, c);
     q.addBindValue(c.id);
     return q.exec() || fail(QStringLiteral("updateCompetitor"));

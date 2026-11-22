@@ -38,4 +38,11 @@ public:
 
     // Delphi TDateTime day number -> QDate
     static QDate fromDelphiDate(double days);
+    // QDate -> Delphi TDateTime day number (0 for an invalid date)
+    static int toDelphiDate(const QDate& date);
+
+    // Competitor field numbers: SkiPro / SkiAlp (COMPETITORS_INFO_n) <-> OpenSkiPro2 (CompField).
+    // 0 when the field has no counterpart.
+    static int fieldFromSource(int sourceId, Format format);
+    static int fieldToSource(int fieldId, Format format);
 };

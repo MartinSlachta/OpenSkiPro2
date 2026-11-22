@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(OpenSkiPro2 VERSION 0.12.0 LANGUAGES CXX)
+project(OpenSkiPro2 VERSION 0.14.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -36,6 +36,7 @@ add_library(osp_core STATIC
     src/db/EventDb.h               src/db/EventDb.cpp
     src/db/SkiProImporter.h        src/db/SkiProImporter.cpp
     src/db/SkiAlpImporter.h        src/db/SkiAlpImporter.cpp
+    src/db/SkiAlpExporter.h        src/db/SkiAlpExporter.cpp
     src/db/CsvImporter.h           src/db/CsvImporter.cpp
     src/db/FisListDb.h             src/db/FisListDb.cpp
     src/timing/Cp540Protocol.h     src/timing/Cp540Protocol.cpp

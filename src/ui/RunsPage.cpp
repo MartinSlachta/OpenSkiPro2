@@ -15,6 +15,7 @@
 #include <QHeaderView>
 #include <QInputDialog>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMenu>
 #include <QMessageBox>
 #include <QPushButton>
@@ -94,6 +95,23 @@ RunsPage::RunsPage(Event* ev, QWidget* parent)
     m_rankingMode->addItem(tr("Event"));
     rtitle->addWidget(m_rankingMode);
     right->addLayout(rtitle);
+    // search in the ranking: the start of the bib, a part of the name (also without accents)
+    auto* search = new QHBoxLayout;
+    m_searchBib = new QLineEdit(this);
+    m_searchBib->setMaximumWidth(70);
+    m_searchBib->setClearButtonEnabled(true);
+    m_searchBib->setToolTip(tr("Show only the bibs starting with this number"));
+    m_searchName = new QLineEdit(this);
+    m_searchName->setMaximumWidth(220);
+    m_searchName->setClearButtonEnabled(true);
+    m_searchName->setToolTip(tr("Show only the competitors whose name contains this text (accents are ignored)"));
+    search->addWidget(new QLabel(tr("Num :"), this));
+    search->addWidget(m_searchBib);
+    search->addSpacing(10);
+    search->addWidget(new QLabel(tr("Competitor :"), this));
+    search->addWidget(m_searchName);
+    search->addStretch();
+    right->addLayout(search);
     m_ranking = new QTableWidget(this);
     m_ranking->setColumnCount(4);
     m_ranking->setHorizontalHeaderLabels({ tr("Rank"), tr("Num"), tr("Competitor"), tr("Time") });
@@ -124,6 +142,8 @@ RunsPage::RunsPage(Event* ev, QWidget* parent)
     connect(bUnproc, &QPushButton::clicked, this, &RunsPage::manageUnprocessed);
     connect(bDelete, &QPushButton::clicked, this, &RunsPage::deleteData);
     connect(m_rankingMode, &QComboBox::currentIndexChanged, this, &RunsPage::refresh);
+    connect(m_searchBib, &QLineEdit::textChanged, this, &RunsPage::applyFilter);
+    connect(m_searchName, &QLineEdit::textChanged, this, &RunsPage::applyFilter);
     connect(ev, &Event::runChanged, this, &RunsPage::refresh);
     connect(ev, &Event::competitorsChanged, this, &RunsPage::refresh);
     connect(ev, &Event::paramsChanged, this, [this] { setRun(m_run); });
@@ -180,6 +200,32 @@ void RunsPage::refresh()
             set(3, UiHelpers::statusText(e.status), Qt::AlignRight);
             ++row;
         }
+    }
+    applyFilter();
+}
+
+// lower case without accents: "duric" finds ĎURICOVÁ
+static QString foldName(const QString& s)
+{
+    const QString d = s.normalized(QString::NormalizationForm_D);
+    QString out;
+    out.reserve(d.size());
+    for (const QChar c : d)
+        if (c.category() != QChar::Mark_NonSpacing)
+            out += c.toLower();
+    return out;
+}
+
+void RunsPage::applyFilter()
+{
+    const QString bib = m_searchBib->text().trimmed();
+    const QString name = foldName(m_searchName->text().trimmed());
+    for (int row = 0; row < m_ranking->rowCount(); ++row) {
+        const QTableWidgetItem* b = m_ranking->item(row, 1);
+        const QTableWidgetItem* n = m_ranking->item(row, 2);
+        const bool show = (bib.isEmpty() || (b && b->text().startsWith(bib)))
+            && (name.isEmpty() || (n && foldName(n->text()).contains(name)));
+        m_ranking->setRowHidden(row, !show);
     }
 }
 

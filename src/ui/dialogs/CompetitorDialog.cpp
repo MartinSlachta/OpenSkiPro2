@@ -83,7 +83,8 @@ CompetitorDialog::CompetitorDialog(Event* ev, const Competitor& c, bool isNew, Q
     for (int f = CompField::PointsDH; f <= CompField::PointsAC; ++f)
         addLine(rf, f, 100);
     addLine(rf, CompField::FromList, 100);
-    addLine(rf, CompField::Custom);
+    for (int i = 0; i < CompField::kCustomCount; ++i)
+        addLine(rf, CompField::customField(i));
     cols->addWidget(right, 1);
     lay->addLayout(cols);
     lay->addLayout(UiHelpers::okCancelRow(this));
